@@ -1,0 +1,71 @@
+
+
+
+==============================================================================================
+// MBME Du Bill Payment - Inquiry request / response
+http://localhost:8081/bill-inquiry/api/mbme-bill-inquiry
+{
+    "transactionId": "20010****0012340066",
+    "merchantId": "66",
+    "merchantLocation": "DU POSTPAID HQ",
+    "serviceId": "103",
+    "method": "balance",
+    "lang": "en",
+    "reqField1": "0551234567"
+}
+-------------------------------------------
+               
+{
+    "responseCode": "000",
+    "status": "SUCCESS",
+    "responseMessage": "Success",
+    "responseData": {
+            "accountNumber": "5233996576",
+            "amount": "408.35",
+            "custName": "",
+            "resField1": "200101120012340066",
+            "resField2":"ck48qka5ggygyhlfcujwxs1y4sj",
+    }
+}
+==============================================================================================
+// MBME Du Bill Payment - Transaction Posting request / response
+http://localhost:8081/bill-payment/api/mbme-bill-payment
+{
+    "transactionId": "2001011****12340066",
+    "merchantId": "66",
+    "merchantLocation": "DU POSTPAID HQ",
+    "method": "pay",
+    "serviceId": "103",
+    "paymentMode": "Cash",
+    "paidAmount":"408.35",
+    "lang": "en",
+    "reqField1": "1006658918",
+    "reqField2": "CREDIT_ACCOUNT_PAY"
+}
+
+------------------------------------------------
+
+{
+    "responseCode": "000",
+    "status": "SUCCESS",
+    "responseMessage": "SUCCESS",
+    "responseData": {
+            "transactionId":"200101120012340066",
+            "amountPaid": "",
+            "providerTransactionId": "",
+            "resField1": "ck48ql8lfagwvegujckp6fvfvb48"
+    }
+}
+
+==============================================================================================
+
+
+
+
+
+
+
+
+
+
+

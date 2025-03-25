@@ -10,7 +10,8 @@ public class BalanceEnquiryRequest implements Serializable {
 	    private String transactionId;
 	    private String deviceId;
 	    private String serviceCode;
-	    private String serviceType;
+	    private String serviceId;
+	    private String serviceType; // balance / payment / inquiry / 
 	    private String merchantId;
 	    private String merchantLocation;
 	    private String language;
@@ -68,6 +69,12 @@ public class BalanceEnquiryRequest implements Serializable {
 		}
 		public void setServiceType(String serviceType) {
 			this.serviceType = serviceType;
+		}
+		public String getServiceId() {
+			return serviceId;
+		}
+		public void setServiceId(String serviceId) {
+			this.serviceId = serviceId;
 		}
 	    
 	    

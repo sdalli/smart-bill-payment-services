@@ -7,6 +7,8 @@ public class BillPaymentRequest {
 	private String transactionId;
 	private String deviceId;
 	private String serviceCode;
+    private String serviceId;
+    private String serviceType;
     private String merchantId;
     private String merchantLocation;
     private String language;
@@ -79,6 +81,18 @@ public class BillPaymentRequest {
 	}
 	public void setPaymentMode(String paymentMode) {
 		this.paymentMode = paymentMode;
+	}
+	public String getServiceId() {
+		return serviceId;
+	}
+	public void setServiceId(String serviceId) {
+		this.serviceId = serviceId;
+	}
+	public String getServiceType() {
+		return serviceType;
+	}
+	public void setServiceType(String serviceType) {
+		this.serviceType = serviceType;
 	}
 	
 

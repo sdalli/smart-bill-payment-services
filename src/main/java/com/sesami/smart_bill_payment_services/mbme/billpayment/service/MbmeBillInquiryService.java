@@ -21,10 +21,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryDynamicResponseField;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryResponse;
-import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.MbmeBillInquiryRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.entity.BillInquiryEntity;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.repository.BillInquiryRepository;
 import com.sesami.smart_bill_payment_services.mbme.token.service.TokenService;
@@ -56,26 +56,26 @@ public class MbmeBillInquiryService {
    
    
    
-   public BalanceEnquiryResponse processMbmeBillInquiryService(BalanceEnquiryRequest balanceEnquiryRequest) throws IOException {
+   public BalanceEnquiryResponse processBillInquiry(BalanceEnquiryRequest balanceEnquiryRequest) throws IOException {
 	   logger.info("Processing MBME BillInquiry request for transactionId: {}", balanceEnquiryRequest.getTransactionId());
 	   BalanceEnquiryResponse balanceEnquiryResponse = null;
 	   
-	   MbmeBillInquiryRequest reqMbmeBillInquiryRequest = new MbmeBillInquiryRequest();
-	   reqMbmeBillInquiryRequest.setTransactionId(balanceEnquiryRequest.getTransactionId());
-	   reqMbmeBillInquiryRequest.setMerchantId(balanceEnquiryRequest.getMerchantId());
-	   reqMbmeBillInquiryRequest.setMerchantLocation(balanceEnquiryRequest.getMerchantLocation());
-	   reqMbmeBillInquiryRequest.setServiceId(balanceEnquiryRequest.getServiceCode());
-	   reqMbmeBillInquiryRequest.setMethod(balanceEnquiryRequest.getServiceType());
-	   reqMbmeBillInquiryRequest.setLang("en");
-	   if(Objects.nonNull(reqMbmeBillInquiryRequest) && Objects.nonNull(reqMbmeBillInquiryRequest.getServiceId())
-			   && !reqMbmeBillInquiryRequest.getServiceId().isEmpty() && reqMbmeBillInquiryRequest.getServiceId().equalsIgnoreCase("103")) {
-		   reqMbmeBillInquiryRequest.setReqField1(balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
-		  // reqMbmeBillInquiryRequest.setReqField2(balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
-	   }else if(Objects.nonNull(reqMbmeBillInquiryRequest) && Objects.nonNull(reqMbmeBillInquiryRequest.getServiceId())
-			   && !reqMbmeBillInquiryRequest.getServiceId().isEmpty() && reqMbmeBillInquiryRequest.getServiceId().equalsIgnoreCase("19")) {
-		   reqMbmeBillInquiryRequest.setReqField1(balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
-		   reqMbmeBillInquiryRequest.setReqField2(balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue()); 
-	   }
+//	   MbmeBillInquiryRequest reqMbmeBillInquiryRequest = new MbmeBillInquiryRequest();
+//	   reqMbmeBillInquiryRequest.setTransactionId(balanceEnquiryRequest.getTransactionId());
+//	   reqMbmeBillInquiryRequest.setMerchantId(balanceEnquiryRequest.getMerchantId());
+//	   reqMbmeBillInquiryRequest.setMerchantLocation(balanceEnquiryRequest.getMerchantLocation());
+//	   reqMbmeBillInquiryRequest.setServiceId(balanceEnquiryRequest.getServiceCode());
+//	   reqMbmeBillInquiryRequest.setMethod(balanceEnquiryRequest.getServiceType());
+//	   reqMbmeBillInquiryRequest.setLang("en");
+//	   if(Objects.nonNull(reqMbmeBillInquiryRequest) && Objects.nonNull(reqMbmeBillInquiryRequest.getServiceId())
+//			   && !reqMbmeBillInquiryRequest.getServiceId().isEmpty() && reqMbmeBillInquiryRequest.getServiceId().equalsIgnoreCase("103")) {
+//		   reqMbmeBillInquiryRequest.setReqField1(balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+//		  // reqMbmeBillInquiryRequest.setReqField2(balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
+//	   }else if(Objects.nonNull(reqMbmeBillInquiryRequest) && Objects.nonNull(reqMbmeBillInquiryRequest.getServiceId())
+//			   && !reqMbmeBillInquiryRequest.getServiceId().isEmpty() && reqMbmeBillInquiryRequest.getServiceId().equalsIgnoreCase("19")) {
+//		   reqMbmeBillInquiryRequest.setReqField1(balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+//		   reqMbmeBillInquiryRequest.setReqField2(balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue()); 
+//	   }
 	  
 	   //reqMbmeBillInquiryRequest.setReqField1("0551234567");
 	   
@@ -84,17 +84,13 @@ public class MbmeBillInquiryService {
        headers.setContentType(MediaType.APPLICATION_JSON);
        headers.set("Authorization", "Bearer " + tokenService.getValidToken().getAccessToken());
        ObjectMapper objectMapper = new ObjectMapper();
-       String jsonRequest = objectMapper.writeValueAsString(reqMbmeBillInquiryRequest);
+       String jsonRequest = generateDynamicRequest(balanceEnquiryRequest);		//objectMapper.writeValueAsString(reqMbmeBillInquiryRequest);
        HttpEntity<String> httpRequest = new HttpEntity<>(jsonRequest, headers);
 
        LocalDateTime requestTimestamp = LocalDateTime.now();
 
-       logger.info("Processing MBME BillInquiry request for Http Request JSON : {}", jsonRequest);
-       
        ResponseEntity<String> response = restTemplate.exchange(billPaymentUrl, HttpMethod.POST, httpRequest, String.class);
 
-       logger.info("Processing MBME BillInquiry request for Http Response JSON : {}", response.getBody());
-       
        BillInquiryEntity billInquiry = new BillInquiryEntity();
        billInquiry.setTransactionId(balanceEnquiryRequest.getTransactionId());
        billInquiry.setMerchantId(balanceEnquiryRequest.getMerchantId());
@@ -129,8 +125,8 @@ public class MbmeBillInquiryService {
            balanceEnquiryResponse.setDueAmount(amount);
            
            
-           if(Objects.nonNull(reqMbmeBillInquiryRequest) && Objects.nonNull(reqMbmeBillInquiryRequest.getServiceId())
-    			   && !reqMbmeBillInquiryRequest.getServiceId().isEmpty() && reqMbmeBillInquiryRequest.getServiceId().equalsIgnoreCase("19")) {
+           if(Objects.nonNull(balanceEnquiryRequest) && Objects.nonNull(balanceEnquiryRequest.getServiceId())
+    			   && !balanceEnquiryRequest.getServiceId().isEmpty() && balanceEnquiryRequest.getServiceId().equalsIgnoreCase("19")) {
         	   String providerTransactionId = rootNode.path("responseData").path("providerTransactionId").asText();
         	   String resField1 = rootNode.path("responseData").path("resField1").asText();
         	   String resField2 = rootNode.path("responseData").path("resField2").asText();
@@ -208,5 +204,30 @@ public class MbmeBillInquiryService {
    }
    
 	 
+   public static String generateDynamicRequest(BalanceEnquiryRequest balanceEnquiryRequest) {
+       ObjectMapper objectMapper = new ObjectMapper();
+       ObjectNode rootNode = objectMapper.createObjectNode();
+
+       rootNode.put("transactionId", balanceEnquiryRequest.getTransactionId());
+       rootNode.put("merchantId", balanceEnquiryRequest.getMerchantId());
+       rootNode.put("serviceId", balanceEnquiryRequest.getServiceId());
+       rootNode.put("method", balanceEnquiryRequest.getServiceType());
+       rootNode.put("lang", balanceEnquiryRequest.getLanguage());
+
+       if ("19".equals(balanceEnquiryRequest.getServiceId())) {
+           rootNode.put("merchantLocation", "Your Location");
+           rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+           rootNode.put("reqField2", balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
+       } else if ("103".equals(balanceEnquiryRequest.getServiceId())) {
+           rootNode.put("merchantLocation", "DU POSTPAID HQ");
+           rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+       } else {
+           rootNode.put("merchantLocation", balanceEnquiryRequest.getMerchantLocation());
+           rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+           rootNode.put("reqField2", balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
+       }
+
+       return rootNode.toString();
+   }
 
 }

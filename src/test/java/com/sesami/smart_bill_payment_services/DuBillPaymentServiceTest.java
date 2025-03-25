@@ -68,7 +68,7 @@ public class DuBillPaymentServiceTest {
         ResponseEntity<String> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), eq(httpRequest), eq(String.class))).thenReturn(responseEntity);
 
-        duBillPaymentService.processMbmeBillPayment(request);
+        duBillPaymentService.processBillPayment(request);
 
         verify(duBillPaymentRepository, times(1)).save(any(BillPayment.class));
         verify(billPaymentActivityRepository, times(1)).save(any(BillPaymentActivity.class));

@@ -41,7 +41,7 @@ public class MbmeBillPaymentService {
 	@Value("${mbme.api.balance-payment.url}")
 	private String billPaymentUrl;
     
-    public BillPaymentResponse processMbmeBillPayment(BillPaymentRequest billPaymentRequest) throws IOException {
+    public BillPaymentResponse processBillPayment(BillPaymentRequest billPaymentRequest) throws IOException {
     	logger.info("Processing processMbmeBillPayment request for transactionId: {}", billPaymentRequest.getTransactionId());
     	BillPaymentResponse billPaymentResponse = null;
     	MbmeBillPaymentRequest mbmeBillPaymentService = new MbmeBillPaymentRequest();
@@ -49,7 +49,7 @@ public class MbmeBillPaymentService {
     	mbmeBillPaymentService.setMerchantId(billPaymentRequest.getMerchantId());
     	mbmeBillPaymentService.setMerchantLocation(billPaymentRequest.getMerchantLocation());
     	mbmeBillPaymentService.setMethod(billPaymentRequest.getMethod());
-    	mbmeBillPaymentService.setServiceId(billPaymentRequest.getServiceCode());
+    	mbmeBillPaymentService.setServiceId(billPaymentRequest.getServiceId());
     	mbmeBillPaymentService.setPaymentMode(billPaymentRequest.getPaymentMode());
     	mbmeBillPaymentService.setPaidAmount(billPaymentRequest.getAmount());
     	mbmeBillPaymentService.setLang("en");
@@ -66,15 +66,53 @@ public class MbmeBillPaymentService {
   			   && !mbmeBillPaymentService.getServiceId().isEmpty() && mbmeBillPaymentService.getServiceId().equalsIgnoreCase("19")) {
   		 mbmeBillPaymentService.setReqField1(billPaymentRequest.getDynamicRequestFields().get(0).getValue());
   		mbmeBillPaymentService.setReqField2(billPaymentRequest.getDynamicRequestFields().get(1).getValue()); 
+  		mbmeBillPaymentService.setReqField3(billPaymentRequest.getDynamicRequestFields().get(2).getValue()); 
+  		mbmeBillPaymentService.setReqField4(billPaymentRequest.getDynamicRequestFields().get(3).getValue()); 
   	   }
     	
+    	 String requestJson= null;
+    	 if(Objects.nonNull(mbmeBillPaymentService) && Objects.nonNull(mbmeBillPaymentService.getServiceId())
+    			   && !mbmeBillPaymentService.getServiceId().isEmpty() && mbmeBillPaymentService.getServiceId().equalsIgnoreCase("103")) {
+    		requestJson = "{\r\n"
+    				+ "    \"transactionId\": \""+billPaymentRequest.getTransactionId()+"\",\r\n"
+    				+ "    \"merchantId\": \""+billPaymentRequest.getMerchantId()+"\",\r\n"
+    				+ "    \"merchantLocation\": \""+billPaymentRequest.getMerchantLocation()+"\",\r\n"
+    				+ "    \"method\": \"pay\",\r\n"
+    				+ "    \"serviceId\": \""+billPaymentRequest.getServiceId()+"\",\r\n"
+    				+ "    \"paymentMode\": \"Cash\",\r\n"
+    				+ "    \"paidAmount\":\""+billPaymentRequest.getAmount()+"\",\r\n"
+    				+ "    \"lang\": \"en\",\r\n"
+    				+ "    \"reqField1\": \""+billPaymentRequest.getDynamicRequestFields().get(0).getValue()+"\",\r\n"
+    				+ "    \"reqField2\": \"CREDIT_ACCOUNT_PAY\"\r\n"
+    				+ "}";
+    		 
+    	 }else if(Objects.nonNull(mbmeBillPaymentService) && Objects.nonNull(mbmeBillPaymentService.getServiceId())
+    			   && !mbmeBillPaymentService.getServiceId().isEmpty() && mbmeBillPaymentService.getServiceId().equalsIgnoreCase("19")) {
+    		 requestJson="{\r\n"
+    					+ "    \"transactionId\": \""+billPaymentRequest.getTransactionId()+"\",\r\n"
+    					+ "    \"merchantId \": \""+billPaymentRequest.getMerchantId()+"\",\r\n"
+    					+ "    \"merchantLocation \": \""+billPaymentRequest.getMerchantLocation()+"\",\r\n"
+    					+ "    \"serviceId\": \""+billPaymentRequest.getServiceId()+"\",\r\n"
+    					+ "    \"method\": \"pay\",\r\n"
+    					+ "    \"paymentMode\": \"Cash\",\r\n"
+    					+ "    \"paidAmount\":\""+billPaymentRequest.getAmount()+"\",\r\n"
+    					+ "    \"lang\": \"en\",\r\n"
+    					+ "    \"reqField1\": \""+billPaymentRequest.getDynamicRequestFields().get(0).getValue()+"\",\r\n"
+    					+ "    \"reqField2\": \""+billPaymentRequest.getDynamicRequestFields().get(1).getValue()+"\",\r\n"
+    					+ "    \"reqField3\": \""+billPaymentRequest.getDynamicRequestFields().get(2).getValue()+"\",\r\n"
+    					+ "    \"reqField4\": \""+billPaymentRequest.getDynamicRequestFields().get(3).getValue()+"\"\r\n"
+    					+ "}";
+    	 }else {
+    	 }
+    	 
+
     	// String url = "https://{{URL}}/du/bill/payment";
     	 HttpHeaders headers = new HttpHeaders();
          headers.setContentType(MediaType.APPLICATION_JSON);
          headers.set("Authorization", "Bearer " + tokenService.getValidToken().getAccessToken());
          ObjectMapper objectMapper = new ObjectMapper();
-         String jsonRequest = objectMapper.writeValueAsString(mbmeBillPaymentService);
-         HttpEntity<String> httpRequest = new HttpEntity<>(jsonRequest, headers);
+        // String jsonRequest = objectMapper.writeValueAsString(mbmeBillPaymentService);
+         HttpEntity<String> httpRequest = new HttpEntity<>(requestJson, headers);
 
         // LocalDateTime requestTimestamp = LocalDateTime.now();
 

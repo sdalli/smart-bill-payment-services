@@ -11,6 +11,8 @@ public class MbmeBillPaymentRequest {
 	    private String lang;
 	    private String reqField1;
 	    private String reqField2;
+	    private String reqField3;
+	    private String reqField4;
 	    
 // 		Transaction Posting
 //	    "transactionId": "2001011****12340066",
@@ -87,6 +89,18 @@ public class MbmeBillPaymentRequest {
 		}
 		public void setReqField2(String reqField2) {
 			this.reqField2 = reqField2;
+		}
+		public String getReqField3() {
+			return reqField3;
+		}
+		public void setReqField3(String reqField3) {
+			this.reqField3 = reqField3;
+		}
+		public String getReqField4() {
+			return reqField4;
+		}
+		public void setReqField4(String reqField4) {
+			this.reqField4 = reqField4;
 		}
 	   
 	    

@@ -61,7 +61,7 @@ public class MbmeBillServiceController {
   @Operation(summary = "Process Bill Payment", description = "Processes a bill payment request and returns the response.")
   public ResponseEntity<BillPaymentResponse> processBillPayment(@RequestBody BillPaymentRequest billPaymentRequest) throws IOException {
       try {
-          BillPaymentResponse billPaymentResponse = billPaymentService.processMbmeBillPayment(billPaymentRequest);
+          BillPaymentResponse billPaymentResponse = billPaymentService.processBillPayment(billPaymentRequest);
           return ResponseEntity.ok(billPaymentResponse);
       } catch (SmartServiceCommonException e) {
           // Log the custom exception here

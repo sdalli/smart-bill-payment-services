@@ -84,7 +84,7 @@ public class MbmeBillInquiryService {
        headers.setContentType(MediaType.APPLICATION_JSON);
        headers.set("Authorization", "Bearer " + tokenService.getValidToken().getAccessToken());
        ObjectMapper objectMapper = new ObjectMapper();
-       String jsonRequest = generateDynamicRequest(balanceEnquiryRequest);		//objectMapper.writeValueAsString(reqMbmeBillInquiryRequest);
+       String jsonRequest = generateDynamicBillInquiryRequest(balanceEnquiryRequest);		//objectMapper.writeValueAsString(reqMbmeBillInquiryRequest);
        HttpEntity<String> httpRequest = new HttpEntity<>(jsonRequest, headers);
 
        LocalDateTime requestTimestamp = LocalDateTime.now();
@@ -204,7 +204,7 @@ public class MbmeBillInquiryService {
    }
    
 	 
-   public static String generateDynamicRequest(BalanceEnquiryRequest balanceEnquiryRequest) {
+   public static String generateDynamicBillInquiryRequest(BalanceEnquiryRequest balanceEnquiryRequest) {
        ObjectMapper objectMapper = new ObjectMapper();
        ObjectNode rootNode = objectMapper.createObjectNode();
 

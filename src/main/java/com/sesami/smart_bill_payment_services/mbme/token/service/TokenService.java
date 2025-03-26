@@ -47,15 +47,17 @@ public class TokenService {
 
     public TokenDetails getValidToken() throws IOException {
         logger.info("Fetching valid token for username: {}", username);
-        TokenDetails tokenDetails = tokenDetailsRepository.findTopByOrderByIdDesc();
-
-        if (tokenDetails == null || tokenDetails.getExpiresAt().isBefore(LocalDateTime.now())) {
-            logger.info("Token expired or not found, fetching new token.");
-            return fetchAndSaveToken(username, password);
-        }
+//        TokenDetails tokenDetails = tokenDetailsRepository.findTopByOrderByIdDesc();
+//
+//        if (tokenDetails == null || tokenDetails.getExpiresAt().isBefore(LocalDateTime.now())) {
+//            logger.info("Token expired or not found, fetching new token.");
+//            return fetchAndSaveToken(username, password);
+//        }
 
         logger.info("Valid token found in database.");
-        return tokenDetails;
+        // return tokenDetails;
+        
+        return fetchAndSaveToken(username, password);
     }
 
     private TokenDetails fetchAndSaveToken(String username, String password) throws IOException {

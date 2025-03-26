@@ -115,7 +115,7 @@ public class MbmeBillPaymentService {
          HttpEntity<String> httpRequest = new HttpEntity<>(requestJson, headers);
 
         // LocalDateTime requestTimestamp = LocalDateTime.now();
-
+         logger.info("Processing processMbmeBillPayment request for MBME Bill payment service ::: {}", requestJson);
          ResponseEntity<String> response = restTemplate.exchange(billPaymentUrl, HttpMethod.POST, httpRequest, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,14 +33,10 @@ public class MbmeBillServiceController {
     @Autowired
     private MbmeBillPaymentService billPaymentService;
     
-
-//    @PostMapping("/mbme-bill-inquiry")
-//    @Operation(summary = "Process Bill Inquiry", description = "Processes a bill inquiry request and returns the response.")
-//    public BalanceEnquiryResponse processBillInquiryService(@RequestBody BalanceEnquiryRequest balanceEnquiryRequest) throws IOException {
-//    	BalanceEnquiryResponse balanceEnquiryResponse =billInquiryService.processMbmeBillInquiryService(balanceEnquiryRequest);
-//    	
-//    	return balanceEnquiryResponse;
-//    }
+    @GetMapping("/hello")
+    public String sayHello() {
+        return "Hello";
+    }
     
   @PostMapping("/bill-inquiry")
   @Operation(summary = "Process Bill Inquiry", description = "Processes a bill inquiry request and returns the response.")

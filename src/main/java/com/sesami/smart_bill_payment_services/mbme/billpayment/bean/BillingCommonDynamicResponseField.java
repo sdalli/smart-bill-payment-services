@@ -1,15 +1,16 @@
 package com.sesami.smart_bill_payment_services.mbme.billpayment.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class BalanceEnquiryDynamicResponseField {
-	 private String name;
-     private String value;
-     private String label;
-     private String type;
-     private boolean visible;
-     private boolean export;
-     private List<ListItem> list;
+public class BillingCommonDynamicResponseField {
+	 private String name="";
+     private String value="";
+     private String label="";
+     private String type="text";
+     private boolean visible=Boolean.FALSE;
+     private boolean export=Boolean.FALSE;
+     private List<ListItem> list= new ArrayList<ListItem>();
 	public String getName() {
 		return name;
 	}

@@ -52,7 +52,7 @@ public class DuBillPaymentServiceTest {
     @Test
     public void testProcessDuBillPayment() throws IOException {
         BillPaymentRequest request = new BillPaymentRequest();
-        request.setTransactionId("20010****0012340066");
+        request.setExternalTransactionId("20010****0012340066");
         request.setMerchantId("66");
         request.setMerchantLocation("DU POSTPAID HQ");
         request.setServiceCode("103");

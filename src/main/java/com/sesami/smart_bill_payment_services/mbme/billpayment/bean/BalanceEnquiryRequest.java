@@ -7,7 +7,8 @@ public class BalanceEnquiryRequest implements Serializable {
 
 	private static final long serialVersionUID = -7600911099236737745L;
 		private String category;
-	    private String transactionId;
+	    private String deviceTransactionId;
+	    private String externalTransactionId;
 	    private String deviceId;
 	    private String serviceCode;
 	    private String serviceId;
@@ -15,18 +16,28 @@ public class BalanceEnquiryRequest implements Serializable {
 	    private String merchantId;
 	    private String merchantLocation;
 	    private String language;
+	    private String paymentMode;
 	    private List<BalanceEnquiryDynamicRequestField> dynamicRequestFields;
+	    
+	    // 
+	    
 		public String getCategory() {
 			return category;
 		}
 		public void setCategory(String category) {
 			this.category = category;
 		}
-		public String getTransactionId() {
-			return transactionId;
+		public String getDeviceTransactionId() {
+			return deviceTransactionId;
 		}
-		public void setTransactionId(String transactionId) {
-			this.transactionId = transactionId;
+		public void setDeviceTransactionId(String deviceTransactionId) {
+			this.deviceTransactionId = deviceTransactionId;
+		}
+		public String getExternalTransactionId() {
+			return externalTransactionId;
+		}
+		public void setExternalTransactionId(String externalTransactionId) {
+			this.externalTransactionId = externalTransactionId;
 		}
 		public String getDeviceId() {
 			return deviceId;
@@ -39,6 +50,18 @@ public class BalanceEnquiryRequest implements Serializable {
 		}
 		public void setServiceCode(String serviceCode) {
 			this.serviceCode = serviceCode;
+		}
+		public String getServiceId() {
+			return serviceId;
+		}
+		public void setServiceId(String serviceId) {
+			this.serviceId = serviceId;
+		}
+		public String getServiceType() {
+			return serviceType;
+		}
+		public void setServiceType(String serviceType) {
+			this.serviceType = serviceType;
 		}
 		public String getMerchantId() {
 			return merchantId;
@@ -64,18 +87,15 @@ public class BalanceEnquiryRequest implements Serializable {
 		public void setDynamicRequestFields(List<BalanceEnquiryDynamicRequestField> dynamicRequestFields) {
 			this.dynamicRequestFields = dynamicRequestFields;
 		}
-		public String getServiceType() {
-			return serviceType;
+		public String getPaymentMode() {
+			return paymentMode;
 		}
-		public void setServiceType(String serviceType) {
-			this.serviceType = serviceType;
+		public void setPaymentMode(String paymentMode) {
+			this.paymentMode = paymentMode;
 		}
-		public String getServiceId() {
-			return serviceId;
-		}
-		public void setServiceId(String serviceId) {
-			this.serviceId = serviceId;
-		}
+		
+	    
+	    
 	    
 	    
 	    

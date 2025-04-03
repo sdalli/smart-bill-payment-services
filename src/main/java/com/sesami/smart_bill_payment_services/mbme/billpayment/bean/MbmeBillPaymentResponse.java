@@ -1,6 +1,9 @@
 package com.sesami.smart_bill_payment_services.mbme.billpayment.bean;
 
 public class MbmeBillPaymentResponse {
+	
+	
+	
 	 	private String responseCode;
 	    private String status;
 	    private String responseMessage;

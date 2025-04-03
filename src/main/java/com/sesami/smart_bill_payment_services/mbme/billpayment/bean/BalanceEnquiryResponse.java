@@ -3,8 +3,9 @@ package com.sesami.smart_bill_payment_services.mbme.billpayment.bean;
 import java.util.List;
 
 public class BalanceEnquiryResponse {
-	private String transactionId;
-    private String currencyCode;
+	private String deviceTransactionId;
+	private String externalTransactionId;
+    private String currencyCode="AED";
     private String responseCode;
     private String responseStatus;
     private String responseMessage;
@@ -14,24 +15,70 @@ public class BalanceEnquiryResponse {
     private String dueAmount;
     private String minAmount;
     private String maxAmount;
-    private String partialPayment;
-    private String banknoteCut;
-    private String changeHandling;
-    private String customerCommission;
-    private String commissionPercentage;
-    private String commissionValue;
-    private String commissionRoundingRules;
-    private String serviceChargesVAT;
-    private List<BalanceEnquiryDynamicResponseField> dynamicResponseFields;
-	public String getTransactionId() {
-		return transactionId;
+    private Boolean partialPayment;
+    private String banknoteCut="";
+    private String changeHandling="";
+    private Boolean customerCommission;
+    private String commissionPercentage="";
+    private String commissionValue="";
+    private String commissionRoundingRules="";
+    private String serviceChargesVAT="";
+    private List<BillingCommonDynamicResponseField> dynamicResponseFields;
+    
+   /* {	
+    	  "transactionId":	API [transactionId]
+    	  "currencyCode":	"AED"
+    	  "responseCode":	API [responseCode]
+    	  "responseStatus":	API [status]
+    	  "responseMessage":	API [responseMessage]
+    	  "customerMessage":	
+    	  "internalWebServiceCode":	
+    	  "internalWebServiceDesc":	
+    	  "dueAmount":	API [amount]
+    	  "minAmount":	"50.00"
+    	  "maxAmount":	"10000.00"
+    	  "partialPayment":	true
+    	  "banknoteCut":	
+    	  "changeHandling":	"credit"
+    	  "customerCommission":	true
+    	  "commissionPercentage":	10.00
+    	  "commissionValue":	
+    	  "commissionRoundingRules":	
+    	  "serviceChargesVAT":	
+    	  "dynamicResponseFields":[	
+    	    {	
+    	      "name":	"externalTransactionId"
+    	      "value":	
+    	      "label":	
+    	      "type":	"text"
+    	      "visible":	true
+    	      "export":	
+    	      "list": [	
+    	        {	
+    	          "description":	
+    	          "amount":	
+    	          "image":	
+    	        }	
+    	      ]  	
+    	    },	
+*/
+    public String getDeviceTransactionId() {
+		return deviceTransactionId;
 	}
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
+	public void setDeviceTransactionId(String deviceTransactionId) {
+		this.deviceTransactionId = deviceTransactionId;
 	}
+	public String getExternalTransactionId() {
+		return externalTransactionId;
+	}
+	public void setExternalTransactionId(String externalTransactionId) {
+		this.externalTransactionId = externalTransactionId;
+	}	    
+    
 	public String getCurrencyCode() {
 		return currencyCode;
 	}
+	
 	public void setCurrencyCode(String currencyCode) {
 		this.currencyCode = currencyCode;
 	}
@@ -89,10 +136,10 @@ public class BalanceEnquiryResponse {
 	public void setMaxAmount(String maxAmount) {
 		this.maxAmount = maxAmount;
 	}
-	public String getPartialPayment() {
+	public Boolean getPartialPayment() {
 		return partialPayment;
 	}
-	public void setPartialPayment(String partialPayment) {
+	public void setPartialPayment(Boolean partialPayment) {
 		this.partialPayment = partialPayment;
 	}
 	public String getBanknoteCut() {
@@ -107,10 +154,10 @@ public class BalanceEnquiryResponse {
 	public void setChangeHandling(String changeHandling) {
 		this.changeHandling = changeHandling;
 	}
-	public String getCustomerCommission() {
+	public Boolean getCustomerCommission() {
 		return customerCommission;
 	}
-	public void setCustomerCommission(String customerCommission) {
+	public void setCustomerCommission(Boolean customerCommission) {
 		this.customerCommission = customerCommission;
 	}
 	public String getCommissionPercentage() {
@@ -137,10 +184,10 @@ public class BalanceEnquiryResponse {
 	public void setServiceChargesVAT(String serviceChargesVAT) {
 		this.serviceChargesVAT = serviceChargesVAT;
 	}
-	public List<BalanceEnquiryDynamicResponseField> getDynamicResponseFields() {
+	public List<BillingCommonDynamicResponseField> getDynamicResponseFields() {
 		return dynamicResponseFields;
 	}
-	public void setDynamicResponseFields(List<BalanceEnquiryDynamicResponseField> dynamicResponseFields) {
+	public void setDynamicResponseFields(List<BillingCommonDynamicResponseField> dynamicResponseFields) {
 		this.dynamicResponseFields = dynamicResponseFields;
 	}
     

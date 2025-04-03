@@ -169,7 +169,7 @@ public class MbmeBillPaymentService {
 				balEnquiryDynamicResponseField_resField2.setValue(rootNode.path("responseData").path("providerTransactionId").asText());
 				balEnquiryDynamicResponseField_resField2.setLabel("");
 				balEnquiryDynamicResponseField_resField2.setType("text");
-				balEnquiryDynamicResponseField_resField2.setVisible(Boolean.TRUE);
+				balEnquiryDynamicResponseField_resField2.setVisible(Boolean.FALSE);
         		
 				balanceEnquiryDynamicResponseField = new ArrayList<BillingCommonDynamicResponseField>();            	
 				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField1);

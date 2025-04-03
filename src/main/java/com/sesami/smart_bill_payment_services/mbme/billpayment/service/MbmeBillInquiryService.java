@@ -149,27 +149,27 @@ public class MbmeBillInquiryService {
         	   BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField3 = new BillingCommonDynamicResponseField();
         	   balEnquiryDynamicResponseField_resField3.setName("accountNumber");
         	   balEnquiryDynamicResponseField_resField3.setValue(rootNode.path("responseData").path("accountNumber").asText());
-        	   balEnquiryDynamicResponseField_resField2.setLabel("ACCOUNT_NUMBER");
-        	   balEnquiryDynamicResponseField_resField2.setType("text");
-        	   balEnquiryDynamicResponseField_resField2.setVisible(Boolean.TRUE);
+        	   balEnquiryDynamicResponseField_resField3.setLabel("ACCOUNT_NUMBER");
+        	   balEnquiryDynamicResponseField_resField3.setType("text");
+        	   balEnquiryDynamicResponseField_resField3.setVisible(Boolean.TRUE);
         	   
         	 //4. accountNumber
         	   BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField4 = new BillingCommonDynamicResponseField();
         	   balEnquiryDynamicResponseField_resField4.setName("apiReturnTransactionId");
         	   balEnquiryDynamicResponseField_resField4.setValue(rootNode.path("responseData").path("resField1").asText());
-        	   balEnquiryDynamicResponseField_resField2.setLabel("");
-        	   balEnquiryDynamicResponseField_resField2.setType("text");
-        	   balEnquiryDynamicResponseField_resField2.setVisible(Boolean.TRUE);
+        	   balEnquiryDynamicResponseField_resField4.setLabel("");
+        	   balEnquiryDynamicResponseField_resField4.setType("text");
+        	   balEnquiryDynamicResponseField_resField4.setVisible(Boolean.FALSE);
         	   
         	   
         	   //5. middlewareTransactionId
         	   
-        	   BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField6 = new BillingCommonDynamicResponseField();
-        	   balEnquiryDynamicResponseField_resField6.setName("middlewareTransactionId");
-        	   balEnquiryDynamicResponseField_resField6.setValue(rootNode.path("responseData").path("resField2").asText()); //middlewareTransactionId
-        	   balEnquiryDynamicResponseField_resField6.setLabel("");
-        	   balEnquiryDynamicResponseField_resField6.setType("text");
-        	   balEnquiryDynamicResponseField_resField6.setVisible(Boolean.FALSE);
+        	   BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField5 = new BillingCommonDynamicResponseField();
+        	   balEnquiryDynamicResponseField_resField5.setName("middlewareTransactionId");
+        	   balEnquiryDynamicResponseField_resField5.setValue(rootNode.path("responseData").path("resField2").asText()); //middlewareTransactionId
+        	   balEnquiryDynamicResponseField_resField5.setLabel("");
+        	   balEnquiryDynamicResponseField_resField5.setType("text");
+        	   balEnquiryDynamicResponseField_resField5.setVisible(Boolean.FALSE);
         	   
         	   balanceEnquiryDynamicResponseField = new ArrayList<BillingCommonDynamicResponseField>(); 
         	   
@@ -181,7 +181,7 @@ public class MbmeBillInquiryService {
         	   
         	   balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField4);
         	   
-        	   balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField6);
+        	   balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField5);
         	   
         	   
         	   

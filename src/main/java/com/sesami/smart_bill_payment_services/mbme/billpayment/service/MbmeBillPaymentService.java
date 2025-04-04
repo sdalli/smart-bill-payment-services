@@ -92,7 +92,7 @@ public class MbmeBillPaymentService {
     			   && !mbmeBillPaymentService.getServiceId().isEmpty() && mbmeBillPaymentService.getServiceId().equalsIgnoreCase("19")) {
     		 requestJson="{\r\n"
     					+ "    \"transactionId\": \""+billPaymentRequest.getExternalTransactionId()+"\",\r\n"
-    					+ "    \"merchantId \": \""+billPaymentRequest.getMerchantId()+"\",\r\n"
+    					+ "    \"merchantId\": \""+billPaymentRequest.getMerchantId()+"\",\r\n"
     					+ "    \"merchantLocation \": \""+billPaymentRequest.getMerchantLocation()+"\",\r\n"
     					+ "    \"serviceId\": \""+billPaymentRequest.getServiceId()+"\",\r\n"
     					+ "    \"method\": \"pay\",\r\n"
@@ -134,7 +134,7 @@ public class MbmeBillPaymentService {
 //        	
 //        	billPaymentResponse.setResponseData(billPaymentSubResponse);
         	
-        	
+        	 logger.info("Processing processMbmeBillPayment Response for MBME Bill payment service ::: {}", response.getBody().toString());
         	JsonNode rootNode = objectMapper.readTree(response.getBody());
      	    String responseCode = rootNode.path("responseCode").asText();
             String responseStatus = rootNode.path("status").asText();

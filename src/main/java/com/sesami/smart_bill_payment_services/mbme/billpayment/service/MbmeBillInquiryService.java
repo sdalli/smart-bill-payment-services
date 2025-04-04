@@ -353,10 +353,10 @@ public class MbmeBillInquiryService {
        rootNode.put("lang", balanceEnquiryRequest.getLanguage());
 
        if ("103".equals(balanceEnquiryRequest.getServiceId())) {
-           rootNode.put("merchantLocation", "DU POSTPAID HQ");
+           rootNode.put("merchantLocation", balanceEnquiryRequest.getMerchantLocation());
            rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
        }else if ("19".equals(balanceEnquiryRequest.getServiceId())) {
-           rootNode.put("merchantLocation", "Your Location");
+           rootNode.put("merchantLocation",  balanceEnquiryRequest.getMerchantLocation());
            rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
            rootNode.put("reqField2", balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
        }  else {

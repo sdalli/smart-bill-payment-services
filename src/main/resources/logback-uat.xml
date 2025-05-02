@@ -13,6 +13,16 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
+    
+    
+    <conversionRule conversionWord="mask" converterClass="com.sesami.smart_bill_payment_services.config.MaskingSensitiveDataConverter"/>
+    
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %mask{%msg}%n</pattern>
+        </encoder>
+    </appender>
+
 
     <root level="INFO">
         <appender-ref ref="FILE"/>

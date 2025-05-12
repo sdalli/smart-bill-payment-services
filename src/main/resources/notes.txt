@@ -1,0 +1,11 @@
+
+
+
+	// 103 # Du_Postpaid : Du Bill Payment
+	// 1 # Du_topup
+	// 19 # Etisalat Postpaid
+	// 19 # Etisalat topup
+	// 18 # DubaiPolice
+	// 42 # Nol
+	// 21 # Salik
+	//

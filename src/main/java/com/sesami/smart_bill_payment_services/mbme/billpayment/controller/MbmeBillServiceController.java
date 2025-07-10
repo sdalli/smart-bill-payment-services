@@ -16,8 +16,8 @@ import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnqui
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryResponse;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillPaymentRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillPaymentResponse;
-import com.sesami.smart_bill_payment_services.mbme.billpayment.service.MbmeBillInquiryService;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.service.MbmeBillPaymentService;
+import com.sesami.smart_bill_payment_services.mbme.billpayment.service.MbmeBillPaymentService_new;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +28,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class MbmeBillServiceController {
 
     @Autowired
-    private MbmeBillInquiryService billInquiryService;
+    private MbmeBillPaymentService_new billInquiryService;
 
     @Autowired
     private MbmeBillPaymentService billPaymentService;

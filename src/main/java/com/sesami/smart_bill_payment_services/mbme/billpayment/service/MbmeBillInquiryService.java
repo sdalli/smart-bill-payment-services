@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -22,11 +23,14 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillingCommonDynamicResponseField;
+import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryDynamicRequestField;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryResponse;
+import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillingCommonDynamicResponseField;
+import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.DynamicRequestField;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.entity.BillInquiryEntity;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.repository.BillInquiryRepository;
+import com.sesami.smart_bill_payment_services.mbme.billpayment.util.DynamicBillInquiryRequestUtil;
 import com.sesami.smart_bill_payment_services.mbme.token.service.TokenService;
 
 @Service
@@ -61,7 +65,9 @@ public class MbmeBillInquiryService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set("Authorization", "Bearer " + tokenService.getValidToken().getAccessToken());
 		ObjectMapper objectMapper = new ObjectMapper();
-		String jsonRequest = generateDynamicBillInquiryRequest(balanceEnquiryRequest); // objectMapper.writeValueAsString(reqMbmeBillInquiryRequest);
+	//	String jsonRequest = generateDynamicBillInquiryRequest(balanceEnquiryRequest); // objectMapper.writeValueAsString(reqMbmeBillInquiryRequest);
+		
+		String jsonRequest = DynamicBillInquiryRequestUtil.generateDynamicBillInquiryRequest(balanceEnquiryRequest);
 		HttpEntity<String> httpRequest = new HttpEntity<>(jsonRequest, headers);
 
 		LocalDateTime requestTimestamp = LocalDateTime.now();
@@ -103,12 +109,13 @@ public class MbmeBillInquiryService {
 			balanceEnquiryResponse.setResponseMessage(responseMessage);
 			balanceEnquiryResponse.setInternalWebServiceCode("000");
 			balanceEnquiryResponse.setInternalWebServiceDesc("SUCCESS");
-			balanceEnquiryResponse.setDueAmount(amount);
 
 			// DU - Service Id = 103 for DU Payment
 			if (Objects.nonNull(balanceEnquiryRequest) && Objects.nonNull(balanceEnquiryRequest.getServiceId())
 					&& !balanceEnquiryRequest.getServiceId().isEmpty()
 					&& balanceEnquiryRequest.getServiceId().equalsIgnoreCase("103")) {
+
+				balanceEnquiryResponse.setDueAmount(amount);
 
 				// 1. amount
 				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField1 = new BillingCommonDynamicResponseField();
@@ -183,12 +190,13 @@ public class MbmeBillInquiryService {
 				balanceEnquiryResponse.setCommissionPercentage("0");
 				balanceEnquiryResponse.setPartialPayment(Boolean.TRUE);
 				balanceEnquiryResponse.setChangeHandling("credit");
-				
 
-			//	|| balanceEnquiryRequest.getServiceId().equalsIgnoreCase("21")
+				// || balanceEnquiryRequest.getServiceId().equalsIgnoreCase("21")
 			} else if (Objects.nonNull(balanceEnquiryRequest) && Objects.nonNull(balanceEnquiryRequest.getServiceId())
 					&& !balanceEnquiryRequest.getServiceId().isEmpty()
 					&& balanceEnquiryRequest.getServiceId().equalsIgnoreCase("1")) {
+
+				balanceEnquiryResponse.setDueAmount(amount);
 
 				// 1. middlewareTransactionId
 				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField1 = new BillingCommonDynamicResponseField();
@@ -210,7 +218,7 @@ public class MbmeBillInquiryService {
 					balEnquiryDynamicResponseField_resField2.setType("text");
 					balEnquiryDynamicResponseField_resField2.setVisible(Boolean.FALSE);
 				}
-				
+
 				// 3. accountNumber
 				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField3 = new BillingCommonDynamicResponseField();
 				if (Objects.nonNull(rootNode) && Objects.nonNull(rootNode.path("responseData").path("accountNumber"))) {
@@ -221,13 +229,12 @@ public class MbmeBillInquiryService {
 					balEnquiryDynamicResponseField_resField3.setType("text");
 					balEnquiryDynamicResponseField_resField3.setVisible(Boolean.TRUE);
 				}
-				
 
 				// 4. minAmount
 				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField4 = new BillingCommonDynamicResponseField();
 				balEnquiryDynamicResponseField_resField4.setName("minAmount");
 				// balEnquiryDynamicResponseField_resField4.setValue(rootNode.path("responseData").path("resField5").asText());
-				balEnquiryDynamicResponseField_resField4.setValue(balanceEnquiryResponse.getMinAmount());
+				balEnquiryDynamicResponseField_resField4.setValue("5.00");
 				balEnquiryDynamicResponseField_resField4.setLabel("MIN_DEPOSIT_AMOUNT");
 				balEnquiryDynamicResponseField_resField4.setType("currency");
 				balEnquiryDynamicResponseField_resField4.setVisible(Boolean.TRUE);
@@ -237,7 +244,7 @@ public class MbmeBillInquiryService {
 				balEnquiryDynamicResponseField_resField5.setName("maxAmount");
 				// balEnquiryDynamicResponseField_resField5.setValue(rootNode.path("responseData").path("resField6").asText());
 				// //maxAmount
-				balEnquiryDynamicResponseField_resField5.setValue(balanceEnquiryResponse.getMaxAmount()); // maxAmount
+				balEnquiryDynamicResponseField_resField5.setValue("1000.00"); // maxAmount
 				balEnquiryDynamicResponseField_resField5.setLabel("MAX_DEPOSIT_AMOUNT");
 				balEnquiryDynamicResponseField_resField5.setType("currency");
 				balEnquiryDynamicResponseField_resField5.setVisible(Boolean.TRUE);
@@ -256,7 +263,6 @@ public class MbmeBillInquiryService {
 
 				balanceEnquiryResponse.setDynamicResponseFields(balanceEnquiryDynamicResponseField);
 
-				
 				balanceEnquiryResponse.setMinAmount("5.00");// 5 - 1000 AED
 				balanceEnquiryResponse.setMaxAmount("1000.00");
 				balanceEnquiryResponse.setCommissionPercentage("0");
@@ -264,9 +270,11 @@ public class MbmeBillInquiryService {
 				balanceEnquiryResponse.setChangeHandling("credit");
 				balanceEnquiryResponse.setCustomerCommission(Boolean.TRUE);
 
-			}else if (Objects.nonNull(balanceEnquiryRequest) && Objects.nonNull(balanceEnquiryRequest.getServiceId())
+			} else if (Objects.nonNull(balanceEnquiryRequest) && Objects.nonNull(balanceEnquiryRequest.getServiceId())
 					&& !balanceEnquiryRequest.getServiceId().isEmpty()
 					&& balanceEnquiryRequest.getServiceId().equalsIgnoreCase("21")) {
+
+				balanceEnquiryResponse.setDueAmount(amount);
 
 				// 1. custName
 				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField1 = new BillingCommonDynamicResponseField();
@@ -278,8 +286,7 @@ public class MbmeBillInquiryService {
 					balEnquiryDynamicResponseField_resField1.setType("text");
 					balEnquiryDynamicResponseField_resField1.setVisible(Boolean.TRUE);
 				}
-				
-				
+
 				// 2. amount
 				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField2 = new BillingCommonDynamicResponseField();
 				if (Objects.nonNull(rootNode) && Objects.nonNull(rootNode.path("responseData").path("amount"))) {
@@ -290,33 +297,30 @@ public class MbmeBillInquiryService {
 					balEnquiryDynamicResponseField_resField2.setType("currency");
 					balEnquiryDynamicResponseField_resField2.setVisible(Boolean.TRUE);
 				}
-				
+
 				// 2. apiReturnTransactionId
 				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField3 = new BillingCommonDynamicResponseField();
-				if (Objects.nonNull(rootNode) && Objects.nonNull(rootNode.path("responseData").path("resField1"))) {
+				if (Objects.nonNull(rootNode)
+						&& Objects.nonNull(rootNode.path("responseData").path("providerTransactionId"))) {
 					balEnquiryDynamicResponseField_resField3.setName("apiReturnTransactionId"); //
 					balEnquiryDynamicResponseField_resField3
-							.setValue(rootNode.path("responseData").path("resField1").asText());
+							.setValue(rootNode.path("responseData").path("providerTransactionId").asText());
 					balEnquiryDynamicResponseField_resField3.setLabel("");
 					balEnquiryDynamicResponseField_resField3.setType("text");
 					balEnquiryDynamicResponseField_resField3.setVisible(Boolean.FALSE);
 				}
-				
-				
 
 				balanceEnquiryDynamicResponseField = new ArrayList<BillingCommonDynamicResponseField>();
 
 				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField1);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField3);
+				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField2);
 
 				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField3);
-
 
 				balanceEnquiryResponse.setDynamicResponseFields(balanceEnquiryDynamicResponseField);
 
-				
-				balanceEnquiryResponse.setMinAmount("50.00");// 5 - 1000 AED
+				balanceEnquiryResponse.setMinAmount("50.00");// 50 - 1000 AED
 				balanceEnquiryResponse.setMaxAmount("1000.00");
 				balanceEnquiryResponse.setCommissionPercentage("0");
 				balanceEnquiryResponse.setPartialPayment(Boolean.TRUE);
@@ -328,130 +332,228 @@ public class MbmeBillInquiryService {
 					&& balanceEnquiryRequest.getServiceId().equalsIgnoreCase("19")) {
 				// Service Id = 19 for Etislat
 
-				balanceEnquiryResponse.setMinAmount("10.00");
-				balanceEnquiryResponse.setMaxAmount("10000.00");
-				balanceEnquiryResponse.setPartialPayment(Boolean.TRUE);
-				balanceEnquiryResponse.setChangeHandling("credit");
-				balanceEnquiryResponse.setCustomerCommission(Boolean.TRUE);
-				balanceEnquiryResponse.setCommissionPercentage("0.00");
-				balanceEnquiryResponse.setCommissionValue("10.50");
-				balanceEnquiryResponse.setServiceChargesVAT("5.00");
-
 				balanceEnquiryDynamicResponseField = new ArrayList<BillingCommonDynamicResponseField>();
-				// 1. accountNumber
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField1 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField1.setName("accountNumber");
-				balEnquiryDynamicResponseField_resField1
-						.setValue(rootNode.path("responseData").path("accountNumber").asText());
-				balEnquiryDynamicResponseField_resField1.setLabel("ACCOUNT_NUMBER");
-				balEnquiryDynamicResponseField_resField1.setType("text");
-				balEnquiryDynamicResponseField_resField1.setVisible(Boolean.TRUE);
 
-				// 2 . apiReturnTransactionId
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField2 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField2.setName("apiReturnTransactionId");
-				balEnquiryDynamicResponseField_resField2
-						.setValue(rootNode.path("responseData").path("providerTransactionId").asText());
-				balEnquiryDynamicResponseField_resField2.setLabel("");
-				balEnquiryDynamicResponseField_resField2.setType("text");
-				balEnquiryDynamicResponseField_resField2.setVisible(Boolean.FALSE);
+				if (Objects.nonNull(balanceEnquiryRequest.getServiceCode())
+						&& !balanceEnquiryRequest.getServiceCode().isEmpty()
+						&& balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("EtisalatBillPayment")) {
 
-				// 3. amount
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField3 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField3.setName("amount");
-				balEnquiryDynamicResponseField_resField3
-						.setValue(rootNode.path("responseData").path("amount").asText());
-				balEnquiryDynamicResponseField_resField3.setLabel("DUE_AMOUNT");
-				balEnquiryDynamicResponseField_resField3.setType("text");
-				balEnquiryDynamicResponseField_resField3.setVisible(Boolean.TRUE);
+					balanceEnquiryResponse.setDueAmount(amount);
+					balanceEnquiryResponse.setMinAmount("20.00");
+					balanceEnquiryResponse.setMaxAmount("10000.00");
+					balanceEnquiryResponse.setPartialPayment(Boolean.TRUE);
+					balanceEnquiryResponse.setChangeHandling("credit");
+					balanceEnquiryResponse.setCustomerCommission(Boolean.TRUE);
+					balanceEnquiryResponse.setCommissionPercentage("");
+					balanceEnquiryResponse.setCommissionValue("");
+					balanceEnquiryResponse.setServiceChargesVAT("");
 
-				// 4. minAmount
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField4 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField4.setName("minAmount");
-				// balEnquiryDynamicResponseField_resField4.setValue(rootNode.path("responseData").path("resField5").asText());
-				balEnquiryDynamicResponseField_resField4.setValue(balanceEnquiryResponse.getMinAmount());
-				balEnquiryDynamicResponseField_resField4.setLabel("MIN_DEPOSIT_AMOUNT");
-				balEnquiryDynamicResponseField_resField4.setType("currency");
-				balEnquiryDynamicResponseField_resField4.setVisible(Boolean.TRUE);
+					// 1. accountNumber
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField1 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField1.setName("accountNumber");
+					balEnquiryDynamicResponseField_resField1
+							.setValue(rootNode.path("responseData").path("accountNumber").asText());
+					balEnquiryDynamicResponseField_resField1.setLabel("ACCOUNT_NUMBER");
+					balEnquiryDynamicResponseField_resField1.setType("text");
+					balEnquiryDynamicResponseField_resField1.setVisible(Boolean.TRUE);
 
-				// 5. maxAmount
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField5 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField5.setName("maxAmount");
-				// balEnquiryDynamicResponseField_resField5.setValue(rootNode.path("responseData").path("resField6").asText());
-				// //maxAmount
-				balEnquiryDynamicResponseField_resField5.setValue(balanceEnquiryResponse.getMaxAmount()); // maxAmount
-				balEnquiryDynamicResponseField_resField5.setLabel("MAX_DEPOSIT_AMOUNT");
-				balEnquiryDynamicResponseField_resField5.setType("currency");
-				balEnquiryDynamicResponseField_resField5.setVisible(Boolean.TRUE);
+					// 2 . apiReturnTransactionId
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField2 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField2.setName("apiReturnTransactionId");
+					balEnquiryDynamicResponseField_resField2
+							.setValue(rootNode.path("responseData").path("providerTransactionId").asText());
+					balEnquiryDynamicResponseField_resField2.setLabel("");
+					balEnquiryDynamicResponseField_resField2.setType("text");
+					balEnquiryDynamicResponseField_resField2.setVisible(Boolean.FALSE);
 
-//            	   BalanceEnquiryDynamicResponseField balEnquiryDynamicResponseField_resField6 = new BalanceEnquiryDynamicResponseField();
-//            	   balEnquiryDynamicResponseField_resField6.setName("maxAmount");
-//            	   balEnquiryDynamicResponseField_resField6.setValue(rootNode.path("responseData").path("resField5").asText()); //accountNumber
-//            	   balEnquiryDynamicResponseField_resField6.setLabel("MAX_DEPOSIT_AMOUNT");
-//            	   balEnquiryDynamicResponseField_resField6.setType("text");
-//            	   balEnquiryDynamicResponseField_resField6.setVisible(Boolean.FALSE);
+					// 3. amount
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField3 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField3.setName("amount");
+					balEnquiryDynamicResponseField_resField3
+							.setValue(rootNode.path("responseData").path("amount").asText());
+					balEnquiryDynamicResponseField_resField3.setLabel("DUE_AMOUNT");
+					balEnquiryDynamicResponseField_resField3.setType("text");
+					balEnquiryDynamicResponseField_resField3.setVisible(Boolean.TRUE);
 
-				// 6. serviceType
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField6 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField6.setName("serviceType");
-				balEnquiryDynamicResponseField_resField6
-						.setValue(rootNode.path("responseData").path("resField1").asText()); // serviceType
-				balEnquiryDynamicResponseField_resField6.setLabel("");
-				balEnquiryDynamicResponseField_resField6.setType("text");
-				balEnquiryDynamicResponseField_resField6.setVisible(Boolean.FALSE);
+					// 4. minAmount
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField4 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField4.setName("minAmount");
+					// balEnquiryDynamicResponseField_resField4.setValue(rootNode.path("responseData").path("resField5").asText());
+					balEnquiryDynamicResponseField_resField4.setValue(balanceEnquiryResponse.getMinAmount());
+					balEnquiryDynamicResponseField_resField4.setLabel("MIN_DEPOSIT_AMOUNT");
+					balEnquiryDynamicResponseField_resField4.setType("currency");
+					balEnquiryDynamicResponseField_resField4.setVisible(Boolean.TRUE);
 
-				// 7. transactionType
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField7 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField7.setName("transactionType");
-				balEnquiryDynamicResponseField_resField7
-						.setValue(rootNode.path("responseData").path("resField2").asText()); // transactionType
-				balEnquiryDynamicResponseField_resField7.setLabel("");
-				balEnquiryDynamicResponseField_resField7.setType("text");
-				balEnquiryDynamicResponseField_resField7.setVisible(Boolean.FALSE);
+					// 5. maxAmount
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField5 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField5.setName("maxAmount");
+					// balEnquiryDynamicResponseField_resField5.setValue(rootNode.path("responseData").path("resField6").asText());
+					// //maxAmount
+					balEnquiryDynamicResponseField_resField5.setValue(balanceEnquiryResponse.getMaxAmount()); // maxAmount
+					balEnquiryDynamicResponseField_resField5.setLabel("MAX_DEPOSIT_AMOUNT");
+					balEnquiryDynamicResponseField_resField5.setType("currency");
+					balEnquiryDynamicResponseField_resField5.setVisible(Boolean.TRUE);
+					// 6. serviceType
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField6 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField6.setName("serviceType");
+					balEnquiryDynamicResponseField_resField6
+							.setValue(rootNode.path("responseData").path("resField1").asText()); // serviceType
+					balEnquiryDynamicResponseField_resField6.setLabel("");
+					balEnquiryDynamicResponseField_resField6.setType("text");
+					balEnquiryDynamicResponseField_resField6.setVisible(Boolean.FALSE);
 
-				// 8. transactionTime
+					// 7. transactionType
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField7 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField7.setName("transactionType");
+					balEnquiryDynamicResponseField_resField7
+							.setValue(rootNode.path("responseData").path("resField2").asText()); // transactionType
+					balEnquiryDynamicResponseField_resField7.setLabel("");
+					balEnquiryDynamicResponseField_resField7.setType("text");
+					balEnquiryDynamicResponseField_resField7.setVisible(Boolean.FALSE);
 
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField8 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField8.setName("transactionTime");
-				balEnquiryDynamicResponseField_resField8
-						.setValue(rootNode.path("responseData").path("resField3").asText()); // transactionType
-				balEnquiryDynamicResponseField_resField8.setLabel("");
-				balEnquiryDynamicResponseField_resField8.setType("text");
-				balEnquiryDynamicResponseField_resField8.setVisible(Boolean.FALSE);
+					// 8. transactionTime
 
-				// 9. replyTime
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField8 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField8.setName("transactionTime");
+					balEnquiryDynamicResponseField_resField8
+							.setValue(rootNode.path("responseData").path("resField3").asText()); // transactionType
+					balEnquiryDynamicResponseField_resField8.setLabel("");
+					balEnquiryDynamicResponseField_resField8.setType("text");
+					balEnquiryDynamicResponseField_resField8.setVisible(Boolean.FALSE);
 
-				BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField9 = new BillingCommonDynamicResponseField();
-				balEnquiryDynamicResponseField_resField9.setName("replyTime");
-				balEnquiryDynamicResponseField_resField9
-						.setValue(rootNode.path("responseData").path("resField4").asText()); // transactionType
-				balEnquiryDynamicResponseField_resField9.setLabel("");
-				balEnquiryDynamicResponseField_resField9.setType("text");
-				balEnquiryDynamicResponseField_resField9.setVisible(Boolean.FALSE);
+					// 9. replyTime
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField1);
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField9 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField9.setName("replyTime");
+					balEnquiryDynamicResponseField_resField9
+							.setValue(rootNode.path("responseData").path("resField4").asText()); // transactionType
+					balEnquiryDynamicResponseField_resField9.setLabel("");
+					balEnquiryDynamicResponseField_resField9.setType("text");
+					balEnquiryDynamicResponseField_resField9.setVisible(Boolean.FALSE);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField2);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField1);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField3);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField2);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField4);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField3);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField5);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField4);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField6);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField5);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField7);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField6);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField8);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField7);
 
-				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField9);
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField8);
 
-				balanceEnquiryResponse.setDynamicResponseFields(balanceEnquiryDynamicResponseField);
-			}else if (Objects.nonNull(balanceEnquiryRequest) && Objects.nonNull(balanceEnquiryRequest.getServiceId())
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField9);
+
+					balanceEnquiryResponse.setDynamicResponseFields(balanceEnquiryDynamicResponseField);
+
+				} else if (Objects.nonNull(balanceEnquiryRequest.getServiceCode())
+						&& !balanceEnquiryRequest.getServiceCode().isEmpty()
+						&& balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("EtisalatTopUp")) {
+					balanceEnquiryResponse.setDueAmount("");
+					balanceEnquiryResponse.setMinAmount("10.00");
+					balanceEnquiryResponse.setMaxAmount("10000.00");
+					balanceEnquiryResponse.setPartialPayment(Boolean.TRUE);
+					balanceEnquiryResponse.setChangeHandling("credit");
+					balanceEnquiryResponse.setCustomerCommission(Boolean.TRUE);
+					balanceEnquiryResponse.setCommissionPercentage("");
+					balanceEnquiryResponse.setCommissionValue("");
+					balanceEnquiryResponse.setServiceChargesVAT("");
+
+					// 1. accountNumber
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField1 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField1.setName("accountNumber");
+					balEnquiryDynamicResponseField_resField1
+							.setValue(rootNode.path("responseData").path("accountNumber").asText());
+					balEnquiryDynamicResponseField_resField1.setLabel("ACCOUNT_NUMBER");
+					balEnquiryDynamicResponseField_resField1.setType("text");
+					balEnquiryDynamicResponseField_resField1.setVisible(Boolean.TRUE);
+					balEnquiryDynamicResponseField_resField1.setExport(Boolean.FALSE);
+
+					// 2 . apiReturnTransactionId
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField2 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField2.setName("apiReturnTransactionId");
+					balEnquiryDynamicResponseField_resField2
+							.setValue(rootNode.path("responseData").path("providerTransactionId").asText());
+					balEnquiryDynamicResponseField_resField2.setLabel("");
+					balEnquiryDynamicResponseField_resField2.setType("text");
+					balEnquiryDynamicResponseField_resField2.setVisible(Boolean.FALSE);
+					balEnquiryDynamicResponseField_resField2.setExport(Boolean.FALSE);
+
+					// 3. amount
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField3 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField3.setName("currentBalance");
+					balEnquiryDynamicResponseField_resField3
+							.setValue(rootNode.path("responseData").path("amount").asText());
+					balEnquiryDynamicResponseField_resField3.setLabel("CURRENT_BALANCE");
+					balEnquiryDynamicResponseField_resField3.setType("text");
+					balEnquiryDynamicResponseField_resField3.setVisible(Boolean.TRUE);
+
+					// 4. minAmount
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField4 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField4.setName("minAmount");
+					// balEnquiryDynamicResponseField_resField4.setValue(rootNode.path("responseData").path("resField5").asText());
+					balEnquiryDynamicResponseField_resField4.setValue(balanceEnquiryResponse.getMinAmount());
+					balEnquiryDynamicResponseField_resField4.setLabel("MIN_DEPOSIT_AMOUNT");
+					balEnquiryDynamicResponseField_resField4.setType("currency");
+					balEnquiryDynamicResponseField_resField4.setVisible(Boolean.TRUE);
+
+					// 5. maxAmount
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField5 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField5.setName("maxAmount");
+					// balEnquiryDynamicResponseField_resField5.setValue(rootNode.path("responseData").path("resField6").asText());
+					// //maxAmount
+					balEnquiryDynamicResponseField_resField5.setValue(balanceEnquiryResponse.getMaxAmount()); // maxAmount
+					balEnquiryDynamicResponseField_resField5.setLabel("MAX_DEPOSIT_AMOUNT");
+					balEnquiryDynamicResponseField_resField5.setType("currency");
+					balEnquiryDynamicResponseField_resField5.setVisible(Boolean.TRUE);
+
+					// 6. transactionTime
+
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField6 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField6.setName("transactionTime");
+					balEnquiryDynamicResponseField_resField6
+							.setValue(rootNode.path("responseData").path("resField3").asText()); // transactionType
+					balEnquiryDynamicResponseField_resField6.setLabel("");
+					balEnquiryDynamicResponseField_resField6.setType("text");
+					balEnquiryDynamicResponseField_resField6.setVisible(Boolean.FALSE);
+
+					// 7. replyTime
+
+					BillingCommonDynamicResponseField balEnquiryDynamicResponseField_resField7 = new BillingCommonDynamicResponseField();
+					balEnquiryDynamicResponseField_resField7.setName("replyTime");
+					balEnquiryDynamicResponseField_resField7
+							.setValue(rootNode.path("responseData").path("resField4").asText()); // transactionType
+					balEnquiryDynamicResponseField_resField7.setLabel("");
+					balEnquiryDynamicResponseField_resField7.setType("text");
+					balEnquiryDynamicResponseField_resField7.setVisible(Boolean.FALSE);
+
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField1);
+
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField2);
+
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField3);
+
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField4);
+
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField5);
+
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField6);
+
+					balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField7);
+
+					balanceEnquiryResponse.setDynamicResponseFields(balanceEnquiryDynamicResponseField);
+				}
+			} else if (Objects.nonNull(balanceEnquiryRequest) && Objects.nonNull(balanceEnquiryRequest.getServiceId())
 					&& !balanceEnquiryRequest.getServiceId().isEmpty()
 					&& balanceEnquiryRequest.getServiceId().equalsIgnoreCase("42")) {
 				// Service Id = 42 for NOL
+
+				balanceEnquiryResponse.setDueAmount("");
 
 				balanceEnquiryResponse.setMinAmount("10.00");
 				balanceEnquiryResponse.setMaxAmount("500.00");
@@ -482,12 +584,9 @@ public class MbmeBillInquiryService {
 				balEnquiryDynamicResponseField_resField2.setType("text");
 				balEnquiryDynamicResponseField_resField2.setVisible(Boolean.FALSE);
 
-				
-
 				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField1);
 
 				balanceEnquiryDynamicResponseField.add(balEnquiryDynamicResponseField_resField2);
-
 
 				balanceEnquiryResponse.setDynamicResponseFields(balanceEnquiryDynamicResponseField);
 			}
@@ -512,33 +611,144 @@ public class MbmeBillInquiryService {
 
 	}
 
+//	public static String generateDynamicBillInquiryRequest(BalanceEnquiryRequest balanceEnquiryRequest) {
+//		ObjectMapper objectMapper = new ObjectMapper();
+//		ObjectNode rootNode = objectMapper.createObjectNode();
+//
+//		rootNode.put("transactionId", balanceEnquiryRequest.getExternalTransactionId());
+//		rootNode.put("merchantId", balanceEnquiryRequest.getMerchantId());
+//		rootNode.put("serviceId", balanceEnquiryRequest.getServiceId());
+//		rootNode.put("method", balanceEnquiryRequest.getServiceType());
+//		rootNode.put("lang", balanceEnquiryRequest.getLanguage());
+//		rootNode.put("merchantLocation", balanceEnquiryRequest.getMerchantLocation());
+//		// 103 : Du Bill Payment
+//		// 1 : Du Top Up
+//		if ("103".equals(balanceEnquiryRequest.getServiceId()) || "1".equals(balanceEnquiryRequest.getServiceId())) {
+//
+//			rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+//		} else if ("19".equals(balanceEnquiryRequest.getServiceId())
+//				|| "42".equals(balanceEnquiryRequest.getServiceId())
+//				|| "18".equals(balanceEnquiryRequest.getServiceId())
+//				|| "21".equals(balanceEnquiryRequest.getServiceId())) {
+//			rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+//			rootNode.put("reqField2", balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
+//		} else {
+//			rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
+//			rootNode.put("reqField2", balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
+//		}
+//
+//		return rootNode.toString();
+//	}
+
+//	public static String generateDynamicBillInquiryRequest(BalanceEnquiryRequest balanceEnquiryRequest) {
+//		ObjectMapper objectMapper = new ObjectMapper();
+//		ObjectNode rootNode = objectMapper.createObjectNode();
+//
+//		// Add static/common fields
+//		rootNode.put("transactionId", balanceEnquiryRequest.getExternalTransactionId());
+//		rootNode.put("merchantId", balanceEnquiryRequest.getMerchantId());
+//		rootNode.put("serviceId", balanceEnquiryRequest.getServiceId());
+//		rootNode.put("method", balanceEnquiryRequest.getServiceType());
+//		rootNode.put("lang", balanceEnquiryRequest.getLanguage());
+//		rootNode.put("merchantLocation", balanceEnquiryRequest.getMerchantLocation());
+//
+//		// Add all dynamicRequestFields by name
+//		List<BalanceEnquiryDynamicRequestField> fields = balanceEnquiryRequest.getDynamicRequestFields();
+//		if (fields != null) {
+//			for (BalanceEnquiryDynamicRequestField field : fields) {
+//				if (field.getName() != null && field.getValue() != null) {
+//					// rootNode.put(field.getName(), field.getValue());
+//					if ("103".equals(balanceEnquiryRequest.getServiceId())
+//							|| "1".equals(balanceEnquiryRequest.getServiceId())) {
+//						  if ("accountNumber".equalsIgnoreCase(field.getName()) && field.getValue()!= null) {
+//							rootNode.put("reqField1", field.getValue());
+//						}
+//
+//					} else if ("19".equals(balanceEnquiryRequest.getServiceId())
+//							|| "42".equals(balanceEnquiryRequest.getServiceId())
+//							|| "18".equals(balanceEnquiryRequest.getServiceId())
+//							|| "21".equals(balanceEnquiryRequest.getServiceId())) {
+//						if ("accountNumber".equalsIgnoreCase(field.getName()) && field.getValue()!= null) {
+//							rootNode.put("reqField1", field.getValue());
+//							rootNode.put("reqField2", field.getValue());
+//						}
+//						
+//					} else {
+//						rootNode.put("reqField1", field.getValue());
+//						rootNode.put("reqField2", field.getValue());
+//					}
+//				} else {
+//					logger.warn("Dynamic request field is missing name or value: {}", field);
+//				}
+//			}
+//		}
+//
+//		return rootNode.toString();
+//	}
+
+	
 	public static String generateDynamicBillInquiryRequest(BalanceEnquiryRequest balanceEnquiryRequest) {
-		ObjectMapper objectMapper = new ObjectMapper();
-		ObjectNode rootNode = objectMapper.createObjectNode();
+        Objects.requireNonNull(balanceEnquiryRequest, "balanceEnquiryRequest must not be null");
 
-		rootNode.put("transactionId", balanceEnquiryRequest.getExternalTransactionId());
-		rootNode.put("merchantId", balanceEnquiryRequest.getMerchantId());
-		rootNode.put("serviceId", balanceEnquiryRequest.getServiceId());
-		rootNode.put("method", balanceEnquiryRequest.getServiceType());
-		rootNode.put("lang", balanceEnquiryRequest.getLanguage());
-		rootNode.put("merchantLocation", balanceEnquiryRequest.getMerchantLocation());
-		// 103 : Du Bill Payment
-		// 1 : Du Top Up
-		if ("103".equals(balanceEnquiryRequest.getServiceId()) || "1".equals(balanceEnquiryRequest.getServiceId())) {
+        var objectMapper = new ObjectMapper();
+        var rootNode = objectMapper.createObjectNode();
 
-			rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
-		} else if ("19".equals(balanceEnquiryRequest.getServiceId())
-				|| "42".equals(balanceEnquiryRequest.getServiceId())
-				|| "18".equals(balanceEnquiryRequest.getServiceId())
-				|| "21".equals(balanceEnquiryRequest.getServiceId())) {
-			rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
-			rootNode.put("reqField2", balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
-		} else {
-			rootNode.put("reqField1", balanceEnquiryRequest.getDynamicRequestFields().get(0).getValue());
-			rootNode.put("reqField2", balanceEnquiryRequest.getDynamicRequestFields().get(1).getValue());
-		}
+        // Add static/common fields using reflection for maintainability and DRYness
+        Map<String, String> staticFields = Map.of(
+            "transactionId", balanceEnquiryRequest.getExternalTransactionId(),
+            "merchantId", balanceEnquiryRequest.getMerchantId(),
+            "serviceId", balanceEnquiryRequest.getServiceId(),
+            "method", balanceEnquiryRequest.getServiceType(),
+            "lang", balanceEnquiryRequest.getLanguage(),
+            "merchantLocation", balanceEnquiryRequest.getMerchantLocation()
+        );
+        staticFields.forEach((key, value) -> {
+            if (value != null) {
+                rootNode.put(key, value);
+            }
+        });
 
-		return rootNode.toString();
-	}
+        // Service-specific dynamic field mapping
+        var serviceId = balanceEnquiryRequest.getServiceId();
+        var dynamicFields = balanceEnquiryRequest.getDynamicRequestFields();
 
+        if (dynamicFields == null || dynamicFields.isEmpty()) {
+            logger.warn("No dynamic request fields found for request: {}", balanceEnquiryRequest);
+            return rootNode.toString();
+        }
+
+        // Convert list to map for easier access
+        var fieldMap = dynamicFields.stream()
+            .filter(f -> f.getName() != null && f.getValue() != null)
+            .collect(java.util.stream.Collectors.toMap(
+                BalanceEnquiryDynamicRequestField::getName,
+                BalanceEnquiryDynamicRequestField::getValue,
+                (v1, v2) -> v1 // handle duplicate keys if any
+            ));
+
+        switch (serviceId) {
+            case "103", "1" -> {
+                putIfPresent(rootNode, "reqField1", fieldMap, "accountNumber");
+            }
+            case "19", "42", "18", "21" -> {
+                putIfPresent(rootNode, "reqField1", fieldMap, "accountNumber");
+                putIfPresent(rootNode, "reqField2", fieldMap, "serviceType");
+            }
+            default -> {
+                // For all other serviceIds, add all dynamic fields using their names as keys
+                fieldMap.forEach(rootNode::put);
+            }
+        }
+
+        return rootNode.toString();
+    }
+
+    private static void putIfPresent(ObjectNode node, String jsonField, Map<String, String> source, String sourceKey) {
+        var value = source.get(sourceKey);
+        if (value != null) {
+            node.put(jsonField, value);
+        } else {
+            logger.warn("Expected dynamic field '{}' not found in request fields.", sourceKey);
+        }
+    }
 }

@@ -5,6 +5,7 @@ public class MbmeBillPaymentRequest {
 	    private String merchantId;
 	    private String merchantLocation;
 	    private String method;
+	    private String serviceCode;
 	    private String serviceId;
 	    private String paymentMode;
 	    private String paidAmount;
@@ -101,6 +102,12 @@ public class MbmeBillPaymentRequest {
 		}
 		public void setReqField4(String reqField4) {
 			this.reqField4 = reqField4;
+		}
+		public String getServiceCode() {
+			return serviceCode;
+		}
+		public void setServiceCode(String serviceCode) {
+			this.serviceCode = serviceCode;
 		}
 	   
 	    

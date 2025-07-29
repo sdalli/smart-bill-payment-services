@@ -25,43 +25,7 @@ public class BalanceEnquiryResponse {
     private String serviceChargesVAT="";
     private List<BillingCommonDynamicResponseField> dynamicResponseFields;
     
-   /* {	
-    	  "transactionId":	API [transactionId]
-    	  "currencyCode":	"AED"
-    	  "responseCode":	API [responseCode]
-    	  "responseStatus":	API [status]
-    	  "responseMessage":	API [responseMessage]
-    	  "customerMessage":	
-    	  "internalWebServiceCode":	
-    	  "internalWebServiceDesc":	
-    	  "dueAmount":	API [amount]
-    	  "minAmount":	"50.00"
-    	  "maxAmount":	"10000.00"
-    	  "partialPayment":	true
-    	  "banknoteCut":	
-    	  "changeHandling":	"credit"
-    	  "customerCommission":	true
-    	  "commissionPercentage":	10.00
-    	  "commissionValue":	
-    	  "commissionRoundingRules":	
-    	  "serviceChargesVAT":	
-    	  "dynamicResponseFields":[	
-    	    {	
-    	      "name":	"externalTransactionId"
-    	      "value":	
-    	      "label":	
-    	      "type":	"text"
-    	      "visible":	true
-    	      "export":	
-    	      "list": [	
-    	        {	
-    	          "description":	
-    	          "amount":	
-    	          "image":	
-    	        }	
-    	      ]  	
-    	    },	
-*/
+   
     public String getDeviceTransactionId() {
 		return deviceTransactionId;
 	}

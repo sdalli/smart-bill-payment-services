@@ -15,7 +15,6 @@ public class BillPaymentRequest {
     private String merchantId;
     private String merchantLocation;
     private String language;
-    private String method;
     private String paymentMode;
     private String paidAmount;
     private List<DynamicRequestField> dynamicRequestFields;
@@ -78,12 +77,6 @@ public class BillPaymentRequest {
 	}
 	public void setLanguage(String language) {
 		this.language = language;
-	}
-	public String getMethod() {
-		return method;
-	}
-	public void setMethod(String method) {
-		this.method = method;
 	}
 	public String getPaymentMode() {
 		return paymentMode;

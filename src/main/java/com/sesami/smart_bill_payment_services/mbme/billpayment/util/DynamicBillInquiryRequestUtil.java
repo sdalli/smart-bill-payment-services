@@ -74,6 +74,7 @@ public final class DynamicBillInquiryRequestUtil {
             case "103", "1" -> {
                 putIfPresent(rootNode, "reqField1", fieldMap, "accountNumber");
             }
+            
             case "14", "15" -> {
                 putIfPresent(rootNode, "reqField1", fieldMap, "serviceName");
             }
@@ -87,8 +88,11 @@ public final class DynamicBillInquiryRequestUtil {
                 putIfPresent(rootNode, "reqField2", fieldMap, "pin");
             }
             case "42" -> {
-                putIfPresent(rootNode, "reqField1", fieldMap, "cardnumber");
+                putIfPresent(rootNode, "reqField1", fieldMap, "cardNumber");
                 putIfPresent(rootNode, "reqField2", fieldMap, "amount");
+            }
+            case "20147" -> {
+                putIfPresent(rootNode, "reqField1", fieldMap, "serviceName");
             }
             case "20150" -> {
                 putIfPresent(rootNode, "reqField1", fieldMap, "transactionNumber");

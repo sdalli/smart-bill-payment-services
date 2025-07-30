@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.catalina.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,7 @@ public class MbmeBillPaymentService {
 		mbmeBillPaymentService.setTransactionId(billPaymentRequest.getExternalTransactionId());
 		mbmeBillPaymentService.setMerchantId(billPaymentRequest.getMerchantId());
 		mbmeBillPaymentService.setMerchantLocation(billPaymentRequest.getMerchantLocation());
-		mbmeBillPaymentService.setMethod(billPaymentRequest.getMethod());
+		mbmeBillPaymentService.setMethod(billPaymentRequest.getServiceType());
 		mbmeBillPaymentService.setServiceId(billPaymentRequest.getServiceId());
 		mbmeBillPaymentService.setPaymentMode(billPaymentRequest.getPaymentMode());
 		mbmeBillPaymentService.setPaidAmount(billPaymentRequest.getPaidAmount());

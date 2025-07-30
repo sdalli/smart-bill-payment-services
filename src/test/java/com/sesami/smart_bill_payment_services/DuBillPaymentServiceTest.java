@@ -56,7 +56,7 @@ public class DuBillPaymentServiceTest {
         request.setMerchantId("66");
         request.setMerchantLocation("DU POSTPAID HQ");
         request.setServiceCode("103");
-        request.setMethod("balance");
+       //  request.setMethod("balance");
         request.setLanguage("en");
         //request.setReqField1("0551234567");
 

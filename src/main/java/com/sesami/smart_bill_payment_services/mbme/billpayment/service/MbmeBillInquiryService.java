@@ -27,7 +27,6 @@ import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnqui
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryResponse;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillingCommonDynamicResponseField;
-import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.DynamicRequestField;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.entity.BillInquiryEntity;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.repository.BillInquiryRepository;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.util.DynamicBillInquiryRequestUtil;

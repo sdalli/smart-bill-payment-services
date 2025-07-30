@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sesami.smart_bill_payment_services.common.util.SmartServiceCommonException;
+import com.sesami.smart_bill_payment_services.exception.SmartServiceCommonException;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryResponse;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillPaymentRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillPaymentResponse;
-import com.sesami.smart_bill_payment_services.mbme.billpayment.service.MbmeBillPaymentService;
-import com.sesami.smart_bill_payment_services.mbme.billpayment.service.MbmeBillPaymentService_new;
+import com.sesami.smart_bill_payment_services.mbme.billpayment.service.MbmeBillInquiryService_V2;
+import com.sesami.smart_bill_payment_services.mbme.billpayment.service.MbmeBillPaymentService_V2;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,10 +28,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class MbmeBillServiceController {
 
     @Autowired
-    private MbmeBillPaymentService_new billInquiryService;
+    private MbmeBillInquiryService_V2 billInquiryServiceV2;
 
     @Autowired
-    private MbmeBillPaymentService billPaymentService;
+    private MbmeBillPaymentService_V2 billPaymentServiceV2;
     
     @GetMapping("/hello")
     public String sayHello() {
@@ -42,7 +42,7 @@ public class MbmeBillServiceController {
   @Operation(summary = "Process Bill Inquiry", description = "Processes a bill inquiry request and returns the response.")
     public ResponseEntity<BalanceEnquiryResponse> processBillInquiry(@RequestBody BalanceEnquiryRequest balanceEnquiryRequest) {
         try {
-            BalanceEnquiryResponse balanceEnquiryResponse = billInquiryService.processBillInquiry(balanceEnquiryRequest);
+            BalanceEnquiryResponse balanceEnquiryResponse = billInquiryServiceV2.processBillInquiry(balanceEnquiryRequest);
             return ResponseEntity.ok(balanceEnquiryResponse);
         } catch (SmartServiceCommonException e) {
             // Log the custom exception here
@@ -58,7 +58,7 @@ public class MbmeBillServiceController {
   @Operation(summary = "Process Bill Payment", description = "Processes a bill payment request and returns the response.")
   public ResponseEntity<BillPaymentResponse> processBillPayment(@RequestBody BillPaymentRequest billPaymentRequest) throws IOException {
       try {
-          BillPaymentResponse billPaymentResponse = billPaymentService.processBillPayment(billPaymentRequest);
+          BillPaymentResponse billPaymentResponse = billPaymentServiceV2.processBillPayment(billPaymentRequest);
           return ResponseEntity.ok(billPaymentResponse);
       } catch (SmartServiceCommonException e) {
           // Log the custom exception here

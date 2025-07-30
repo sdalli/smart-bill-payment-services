@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryDynamicRequestField;
+import com.sesami.smart_bill_payment_services.exception.SmartServiceCommonException;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryRequest;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryResponse;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BillingCommonDynamicResponseField;
@@ -33,7 +32,7 @@ import com.sesami.smart_bill_payment_services.mbme.billpayment.util.DynamicBillI
 import com.sesami.smart_bill_payment_services.mbme.token.service.TokenService;
 
 @Service
-public class MbmeBillPaymentService_new {
+public class MbmeBillInquiryService_V2 {
 
 	private static final Logger logger = LoggerFactory.getLogger(MbmeBillInquiryService.class);
 
@@ -48,6 +47,10 @@ public class MbmeBillPaymentService_new {
 
 	@Value("${mbme.api.balance-payment.url}")
 	private String billPaymentUrl;
+	
+	private static final String TEXT_FIELD_TYPE = "text";
+	private static final String CURRENCY_FIELD_TYPE = "currency";
+	private static final String DUE_AMOUNT_LABEL = "DUE_AMOUNT";
 
 	public BalanceEnquiryResponse processBillInquiry(BalanceEnquiryRequest balanceEnquiryRequest) throws IOException {
 		Objects.requireNonNull(balanceEnquiryRequest, "BalanceEnquiryRequest must not be null");
@@ -83,7 +86,7 @@ public class MbmeBillPaymentService_new {
 		billInquiry.setRequestJson(jsonRequest);
 		billInquiry.setResponseJson(response.getBody());
 		billInquiry.setTimestamp(LocalDateTime.now());
-		billInquiryRepository.save(billInquiry);
+		// billInquiryRepository.save(billInquiry);
 	}
 
 	private BalanceEnquiryResponse processResponse(BalanceEnquiryRequest request, ResponseEntity<String> response)
@@ -118,107 +121,159 @@ public class MbmeBillPaymentService_new {
 		setAdditionalResponseDetails(response, balanceEnquiryRequest);
 		return response;
 	}
-
+// TODO : 
 	private List<BillingCommonDynamicResponseField> generateDynamicResponseFields(
 			BalanceEnquiryRequest balanceEnquiryRequest, JsonNode rootNode) {
 		var dynamicFields = new ArrayList<BillingCommonDynamicResponseField>();
-
+// createDynamicField(String name, String value, String label, String type,		boolean visible, boolean isExportAllowed, ArrayList<ListItem> list)
 		switch (balanceEnquiryRequest.getServiceId()) {
 		case "103" -> { // DU Bill payment service
 			dynamicFields.add(createDynamicField("amount", rootNode.path("responseData").path("amount").asText(),
-					"DUE_AMOUNT", "currency", true, false, null));
+					"DUE_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields
 					.add(createDynamicField("customerName", rootNode.path("responseData").path("custName").asText(),
-							"CUSTOMER_NAME", "text", true, false, null));
+							"CUSTOMER_NAME", "text", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields.add(
 					createDynamicField("accountNumber", rootNode.path("responseData").path("accountNumber").asText(),
-							"ACCOUNT_NUMBER", "text", true, false, null));
+							"ACCOUNT_NUMBER", "text", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("apiReturnTransactionId",
-					rootNode.path("responseData").path("resField1").asText(), "", "text", true, false, null));
+					rootNode.path("responseData").path("resField1").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("middlewareTransactionId",
-					rootNode.path("responseData").path("resField2").asText(), "", "text", true, false, null));
+					rootNode.path("responseData").path("resField2").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 		}
 		case "1" -> { // DU TopUp Recharge
 			dynamicFields.add(createDynamicField("middlewareTransactionId",
-					rootNode.path("responseData").path("resField2").asText(), "", "text", true, false, null));
+					rootNode.path("responseData").path("resField2").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("apiReturnTransactionId",
-					rootNode.path("responseData").path("resField1").asText(), "", "text", true, false, null));
+					rootNode.path("responseData").path("resField1").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 			dynamicFields.add(
 					createDynamicField("accountNumber", rootNode.path("responseData").path("accountNumber").asText(),
-							"PHONE_NUMBER", "text", true, false, null));
+							"PHONE_NUMBER", "text", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields
-					.add(createDynamicField("minAmount", "5.00", "MIN_DEPOSIT_AMOUNT", "currency", true, false, null));
+					.add(createDynamicField("minAmount", "5.00", "MIN_DEPOSIT_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields.add(
-					createDynamicField("maxAmount", "1000.00", "MAX_DEPOSIT_AMOUNT", "currency", true, false, null));
+					createDynamicField("maxAmount", "1000.00", "MAX_DEPOSIT_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
 		}
-		case "19" -> { // EtisalatTopUp /EtisalatBillPayment
+		case "19" -> { // EtisalatTopUp 
 			if (Objects.nonNull(balanceEnquiryRequest.getServiceCode())
 					&& !balanceEnquiryRequest.getServiceCode().isEmpty()
 					&& balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("EtisalatTopUp")) {
-				dynamicFields.add(createDynamicField("externaltransactionId",
-						rootNode.path("responseData").path("transactionId").asText(), "", "text", false, true, null));
+				
+				
+				dynamicFields.add(createDynamicField("accountNumber",
+						rootNode.path("responseData").path("accountNumber").asText(), "ACCOUNT_NUMBER", "text", Boolean.TRUE,
+						Boolean.FALSE, null));
 				dynamicFields.add(createDynamicField("apiReturnTransactionId",
-						rootNode.path("responseData").path("providerTransactionId").asText(), "PROVIDER_TRANSACTION_ID",
-						"text", false, false, null));
-				dynamicFields.add(createDynamicField("middlewareTransactionId",
-						rootNode.path("responseData").path("resField16").asText(), "MIDDLEWARE_TRANSACTION_ID", "text",
-						false, false, null));
+						rootNode.path("responseData").path("providerTransactionId").asText(), "", "text", Boolean.FALSE, Boolean.FALSE,
+						null));
+				dynamicFields.add(createDynamicField("currentBalance", rootNode.path("responseData").path("amount").asText(),
+						"CURRENT_BALANCE", "currency", Boolean.TRUE, Boolean.FALSE, null));
+				
+				dynamicFields.add(
+						createDynamicField("minAmount",
+								rootNode.path("responseData").path("resField5").asText(), "MIN_DEPOSIT_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
+				
+				dynamicFields.add(createDynamicField("maxAmount", 
+						rootNode.path("responseData").path("resField6").asText(), "MAX_DEPOSIT_AMOUNT", "currency", Boolean.TRUE,
+						Boolean.FALSE, null));
+				dynamicFields.add(createDynamicField("transactionTime",
+						rootNode.path("responseData").path("resField3").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+				
+				dynamicFields.add(createDynamicField("replyTime",
+						rootNode.path("responseData").path("resField4").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+			
+				//EtisalatBillPayment
 			} else if (Objects.nonNull(balanceEnquiryRequest.getServiceCode())
 					&& !balanceEnquiryRequest.getServiceCode().isEmpty()
 					&& balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("EtisalatBillPayment")) {
-				dynamicFields.add(createDynamicField("externaltransactionId",
-						rootNode.path("responseData").path("transactionId").asText(), "", "text", false, true, null));
-				dynamicFields
-						.add(createDynamicField("amountPaid", rootNode.path("responseData").path("amountPaid").asText(),
-								"currency", "text", false, true, null));
+
+				dynamicFields.add(createDynamicField("accountNumber",
+						rootNode.path("responseData").path("accountNumber").asText(), "ACCOUNT_NUMBER", "text", Boolean.TRUE,
+						Boolean.FALSE, null));
 				dynamicFields.add(createDynamicField("apiReturnTransactionId",
-						rootNode.path("responseData").path("providerTransactionId").asText(), "", "text", false, false,
+						rootNode.path("responseData").path("providerTransactionId").asText(), "", "text", Boolean.FALSE, Boolean.FALSE,
 						null));
-				dynamicFields.add(createDynamicField("transactionBillerStatus",
-						rootNode.path("responseData").path("resField1").asText(), "", "text", false, false, null));
+				dynamicFields.add(createDynamicField("amount", rootNode.path("responseData").path("amount").asText(),
+						DUE_AMOUNT_LABEL, CURRENCY_FIELD_TYPE, Boolean.TRUE, Boolean.FALSE, null));
+				
+//				dynamicFields.add(
+//						createDynamicField("minAmount",
+//								rootNode.path("responseData").path("resField5").asText(),"MIN_DEPOSIT_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
+				
+				dynamicFields.add(createDynamicField(
+					    "minAmount", 
+					    rootNode.path("responseData").path("resField5").asText().isEmpty() ? "20.00" : rootNode.path("responseData").path("resField5").asText(),
+					    "MIN_DEPOSIT_AMOUNT", 
+					    "currency", 
+					    Boolean.TRUE, 
+					    Boolean.FALSE, 
+					    null
+					));
+				
+//				dynamicFields.add(createDynamicField("maxAmount", 
+//						rootNode.path("responseData").path("resField6").asText(),"MAX_DEPOSIT_AMOUNT", "currency", Boolean.TRUE,
+//						Boolean.FALSE, null));
+				dynamicFields.add(createDynamicField(
+					    "maxAmount", 
+					    rootNode.path("responseData").path("resField6").asText().isEmpty() ? "10000.00" : rootNode.path("responseData").path("resField6").asText(),
+					    "MAX_DEPOSIT_AMOUNT", 
+					    "currency", 
+					    Boolean.TRUE, 
+					    Boolean.FALSE, 
+					    null
+					));
+				
 				dynamicFields.add(createDynamicField("serviceType",
-						rootNode.path("responseData").path("resField2").asText(), "", "text", false, false, null));
+						rootNode.path("responseData").path("resField1").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+
 				dynamicFields.add(createDynamicField("transactionType",
-						rootNode.path("responseData").path("resField3").asText(), "", "text", false, false, null));
+						rootNode.path("responseData").path("resField2").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 				dynamicFields.add(createDynamicField("transactionTime",
-						rootNode.path("responseData").path("resField4").asText(), "", "currency", true, false, null));
+						rootNode.path("responseData").path("resField3").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 				dynamicFields.add(createDynamicField("replyTime",
-						rootNode.path("responseData").path("resField5").asText(), "", "text", false, false, null));
-				dynamicFields.add(createDynamicField("middlewareTransactionId",
-						rootNode.path("responseData").path("resField6").asText(), "", "text", false, true, null));
+						rootNode.path("responseData").path("resField4").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 			}
 
 		}
-		case "42" -> { // NOL Card TopUp / Recharge
-			dynamicFields.add(createDynamicField("externaltransactionId",
-					rootNode.path("responseData").path("transactionId").asText(), "", "text", false, true, null));
-			dynamicFields.add(createDynamicField("middlewareTransactionId",
-					rootNode.path("responseData").path("resField3").asText(), "", "text", false, true, null));
+		case "21" -> {  // Salik Topup Service
+			dynamicFields
+			.add(createDynamicField("customerName", rootNode.path("responseData").path("custName").asText(),
+					"CUSTOMER_NAME", "text", Boolean.TRUE, Boolean.FALSE, null));
+
+			dynamicFields.add(createDynamicField("amount", rootNode.path("responseData").path("amount").asText(),
+					"BALANCE_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("apiReturnTransactionId",
-					rootNode.path("responseData").path("resField1").asText(), "", "text", false, true, null));
-			dynamicFields.add(createDynamicField("TopupReferenceNumber",
-					rootNode.path("responseData").path("resField2").asText(), "", "text", false, true, null));
+					rootNode.path("responseData").path("providerTransactionId").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+			
+		}
+		case "42" -> { // NOL Card TopUp -- Recharge
+			dynamicFields.add(createDynamicField("timeStamp",
+					rootNode.path("responseData").path("resField1").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+			
+			dynamicFields.add(createDynamicField("apiReturnTransactionId",
+					rootNode.path("responseData").path("resField2").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+			
 		}
 		case "20150" -> { // Dubai DED Payment
-			dynamicFields.add(createDynamicField("commissionValue", "20.00", "CUSTOMER_COMMISSION", "currency", true,
-					false, null));
+			dynamicFields.add(createDynamicField("commissionValue", "20.00", "CUSTOMER_COMMISSION", "currency", Boolean.TRUE,
+					Boolean.FALSE, null));
 			dynamicFields
 					.add(createDynamicField("voucherNumber", rootNode.path("responseData").path("resField1").asText(),
-							"VOUCHER_NUMBER", "text", true, false, null));
+							"VOUCHER_NUMBER", "text", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("dueAmount", rootNode.path("responseData").path("amount").asText(),
-					"DUE_AMOUNT", "currency", true, false, null));
+					"DUE_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields
 					.add(createDynamicField("voucherDate", rootNode.path("responseData").path("resField2").asText(),
-							"VOUCHER_DATE", "text", true, false, null));
+							"VOUCHER_DATE", "text", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields.add(
 					createDynamicField("voucherExpireDate", rootNode.path("responseData").path("resField3").asText(),
-							"VOUCHER_EXPIRE_DATE", "text", true, false, null));
+							"VOUCHER_EXPIRE_DATE", "text", Boolean.TRUE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("cashFlag", rootNode.path("responseData").path("resField4").asText(),
-					"", "text", false, false, null));
+					"", "text", Boolean.FALSE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("datedChequeFlag",
-					rootNode.path("responseData").path("resField5").asText(), "", "text", false, false, null));
+					rootNode.path("responseData").path("resField5").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 			dynamicFields.add(createDynamicField("creditCardFlag",
-					rootNode.path("responseData").path("resField6").asText(), "", "text", false, false, null));
+					rootNode.path("responseData").path("resField6").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
 
 		}
 		case "20147" -> { // Hello / Five recharge
@@ -229,12 +284,12 @@ public class MbmeBillPaymentService_new {
 		        var productNode = arrayResponse.get(i);
 		        var productAttributes = new ArrayList<ListItem>();
 
-		        productAttributes.add(createListItem("id", productNode.path("id2").asText(), "", "text", true));
-		        productAttributes.add(createListItem("serviceId", productNode.path("serviceId").asText(), "", "text", true));
-		        productAttributes.add(createListItem("description", productNode.path("desc").asText(), "PRODUCT_DESCRIPTION", "text", false));
-		        productAttributes.add(createListItem("amount", productNode.path("Sum").asText(), "", "currency", true));
-		        productAttributes.add(createListItem("image", productNode.path("image").asText(), "", "image", false));
-		        productAttributes.add(createListItem("voucherBrand", productNode.path("brand").asText(), "", "text", true));
+		        productAttributes.add(createListItem("id", productNode.path("id2").asText(), "", "text", Boolean.TRUE));
+		        productAttributes.add(createListItem("serviceId", productNode.path("serviceId").asText(), "", "text", Boolean.TRUE));
+		        productAttributes.add(createListItem("description", productNode.path("desc").asText(), "PRODUCT_DESCRIPTION", "text", Boolean.FALSE));
+		        productAttributes.add(createListItem("amount", productNode.path("Sum").asText(), "", "currency", Boolean.TRUE));
+		        productAttributes.add(createListItem("image", productNode.path("image").asText(), "", "image", Boolean.FALSE));
+		        productAttributes.add(createListItem("voucherBrand", productNode.path("brand").asText(), "", "text", Boolean.TRUE));
 
 		        var product = new ListItem();
 		        product.setRowNumber(i + 1);
@@ -242,70 +297,69 @@ public class MbmeBillPaymentService_new {
 		        productsList.add(product);
 		    }
 
-		    dynamicFields.add(createDynamicField("productsList", "", "SELECT_VOUCHER", "buttons", true, false, productsList));
+		    dynamicFields.add(createDynamicField("productsList", "", "SELECT_VOUCHER", "buttons", Boolean.TRUE, Boolean.FALSE, productsList));
 
 		}
 		case "112" -> { // International TopUp
 
-		    dynamicFields.add(createDynamicField(
-		        "providerName",
-		        rootNode.path("responseData").path("resField2").asText(),
-		        "SERVICE_PROVIDER",
-		        "text",
-		        true,
-		        false,
-		        null
-		    ));
+		    // Check for error response
+		    String responseCode = rootNode.path("responseCode").asText();
+		    if ("302".equals(responseCode)) {
+		        String billerErrorCode = rootNode.path("billerErrorCode").asText();
+		        String billerMessage = rootNode.path("billerMessage").asText();
+		        String responseMessage = rootNode.path("responseMessage").asText();
 
-		    dynamicFields.add(createDynamicField(
-		        "phoneNumber",
-		        balanceEnquiryRequest.getDynamicRequestFields() == null ? null :
-		            balanceEnquiryRequest.getDynamicRequestFields().stream()
-		                .filter(field -> "phoneNumber".equals(field.getName()))
-		                .map(BalanceEnquiryDynamicRequestField::getValue)
-		                .findFirst()
-		                .orElse(null),
-		        "PHONE_NUMBER",
-		        "text",
-		        true,
-		        false,
-		        null
-		    ));
+		        throw new SmartServiceCommonException(
+		            String.format("Error Code: %s, Biller Error Code: %s, Message: %s", responseCode, billerErrorCode, responseMessage),
+		            HttpStatus.TOO_MANY_REQUESTS
+		        );
+		    } else if ("301".equals(responseCode)) {
+		        String responseMessage = rootNode.path("responseMessage").asText();
 
-		    // Get ReceiveCurrencyIso from first item of resField3 array in response
-		    String receiveCurrencyIso = "";
-		    var resField3 = rootNode.path("responseData").path("resField3");
-		    if (resField3.isArray() && resField3.size() > 0) {
-		        receiveCurrencyIso = resField3.get(0).path("Maximum").path("ReceiveCurrencyIso").asText();
+		        throw new SmartServiceCommonException(
+		            String.format("Duplicate Transaction Error: %s", responseMessage),
+		            HttpStatus.CONFLICT
+		        );
 		    }
 
+		    // Parse providerName
 		    dynamicFields.add(createDynamicField(
-		        "amounts",
-		        receiveCurrencyIso,
-		        "DUE_AMOUNT",
-		        "currency",
-		        true,
-		        false,
+		        "providerName",
+		       "",
+		        // rootNode.path("responseData").path("dynamicResponseFields").findValue("resField2").path("value").asText(), 
+		        "SERVICE_PROVIDER",
+		        "text",
+		        Boolean.TRUE,
+		        Boolean.FALSE,
 		        null
 		    ));
 
-		    // parse products list from resField3
+		    // Parse phoneNumber
+		    dynamicFields.add(createDynamicField(
+		        "phoneNumber",
+		       // rootNode.path("responseData").path("dynamicResponseFields").findValue("phoneNumber").path("value").asText(),
+		        "",
+		        "PHONE_NUMBER",
+		        "text",
+		        Boolean.TRUE,
+		        Boolean.FALSE,
+		        null
+		    ));
+
+		    // Parse amounts (list of products)
 		    var productsList = new ArrayList<ListItem>();
-		    var arrayResponse = rootNode.path("responseData").path("resField3");
-		    for (var i = 0; i < arrayResponse.size(); i++) {
-		        var productNode = arrayResponse.get(i);
+		    var amountsField = rootNode.path("responseData").path("dynamicResponseFields").findValue("amounts");
+		    var listArray = amountsField.path("list");
+
+		    for (var i = 0; i < listArray.size(); i++) {
+		        var productNode = listArray.get(i);
 		        var productAttributes = new ArrayList<ListItem>();
 
-		        productAttributes.add(createListItem("SkuCode", productNode.path("SkuCode").asText(), "PRODUCT_ID", "text", true));
-		        productAttributes.add(createListItem("ProviderCode", productNode.path("ProviderCode").asText(), "SERVICE_ID", "text", true));
-		        productAttributes.add(createListItem("description", productNode.path("DefaultDisplayText").asText(), "PRODUCT_DESCRIPTION", "text", false));
-		        productAttributes.add(createListItem("amount", productNode.path("Maximum").path("ReceiveValue").asText(), "AMOUNT", "currency", true));
-		        productAttributes.add(createListItem("currency", productNode.path("Maximum").path("ReceiveCurrencyIso").asText(), "CURRENCY", "text", true));
-		        productAttributes.add(createListItem("benefits", productNode.path("Benefits").toString(), "BENEFITS", "text", false));
-		        productAttributes.add(createListItem("validity", productNode.path("ValidityPeriodIso").asText(), "VALIDITY", "text", false));
-		        productAttributes.add(createListItem("region", productNode.path("RegionCode").asText(), "REGION", "text", true));
-		        productAttributes.add(createListItem("paymentType", productNode.path("PaymentTypes").toString(), "PAYMENT_TYPE", "text", true));
-		        // Add more fields if needed from productNode...
+		        productAttributes.add(createListItem("id", productNode.findValue("id").path("value").asText(), "SKU_CODE", "text", Boolean.TRUE));
+		        productAttributes.add(createListItem("description", productNode.findValue("description").path("value").asText(), "PRODUCT_DESCRIPTION", "text", Boolean.FALSE));
+		        productAttributes.add(createListItem("value", productNode.findValue("value").path("value").asText(), "PRODUCT_VALUE", "currency", Boolean.TRUE));
+		        productAttributes.add(createListItem("foreignValue", productNode.findValue("foreignValue").path("value").asText(), "PRODUCT_FOREIGN_VALUE", "number", Boolean.TRUE));
+		        productAttributes.add(createListItem("foreignCurrencyIso", productNode.findValue("foreignCurrencyIso").path("value").asText(), "FOREIGN_CURRENCY_ISO", "text", Boolean.FALSE));
 
 		        var product = new ListItem();
 		        product.setRowNumber(i + 1);
@@ -314,12 +368,12 @@ public class MbmeBillPaymentService_new {
 		    }
 
 		    dynamicFields.add(createDynamicField(
-		        "productsList",
+		        "amounts",
 		        "",
-		        "SELECT_VOUCHER",
+		        "SELECT_TOPUP_ITEM",
 		        "buttons",
-		        true,
-		        false,
+		        Boolean.TRUE,
+		        Boolean.FALSE,
 		        productsList
 		    ));
 		}
@@ -329,11 +383,11 @@ public class MbmeBillPaymentService_new {
 			
 		    // Add trafficFileNo field
 		    dynamicFields.add(createDynamicField("trafficFileNo", rootNode.path("responseData").path("resField2").asText(),
-		            "TRAFFIC_FILE_NUMBER", "text", true, false, null));
+		            "TRAFFIC_FILE_NUMBER", "text", Boolean.TRUE, Boolean.FALSE, null));
 
 		    // Add pedestrianFine field
 		    dynamicFields.add(createDynamicField("pedestrianFine", rootNode.path("responseData").path("resField3").asText(),
-		            "", "text", false, false, null));
+		            "", "text", Boolean.FALSE, Boolean.FALSE, null));
 
 		    // Add ticketsList field
 		    ArrayList<ListItem> ticketsList = new ArrayList<>();
@@ -346,21 +400,21 @@ public class MbmeBillPaymentService_new {
 		            JsonNode ticket = ticketsArray.get(j);
 		            List<ListItem> ticketAttributes = new ArrayList<>();
 
-		            ticketAttributes.add(createListItem("ticketNo", ticket.path("TicketNo").asText(), "TICKET_NUMBER", "text", true));
-		            ticketAttributes.add(createListItem("flagPayable", ticket.path("isPayable").asText(), "PAYABLE_FLAG", "text", false));
-		            ticketAttributes.add(createListItem("ticketId", ticket.path("TicketId").asText(), "", "text", true));
-		            ticketAttributes.add(createListItem("fineSource", ticketNode.path("FineSource").asText(), "FINE_SOURCE", "text", false));
-		            ticketAttributes.add(createListItem("ticketDate", ticket.path("ticketDateField").asText(), "TICKET_DATE", "text", false));
-		            ticketAttributes.add(createListItem("ticketTime", ticket.path("ticketTimeField").asText(), "TICKET_TIME", "text", false));
-		            ticketAttributes.add(createListItem("ticketDescription", ticket.path("TicketDescription").asText(), "TICKET_DESCRIPTION", "text", false));
-		            ticketAttributes.add(createListItem("ticketAmount", ticket.path("CalculatedFineAmount").asText(), "PRODUCT_DESCRIPTION", "currency", false));
-		            ticketAttributes.add(createListItem("locationDescription", ticket.path("locationDescription").asText(), "LOCATION_DESCRIPTION", "text", false));
-		            ticketAttributes.add(createListItem("penaltyFine", ticket.path("PenaltyFine").asText(), "PENALTY_FINE", "text", false));
-		            ticketAttributes.add(createListItem("knowledgeFee", ticket.path("KnowledgeFee").asText(), "KNOWLEDGE_FEE", "text", false));
-		            ticketAttributes.add(createListItem("licenceNo", ticket.path("LicenseNo").asText(), "LICENCE_NUMBER", "text", false));
-		            ticketAttributes.add(createListItem("plateFrom", ticket.path("PlateFrom").asText(), "PLATE_FROM", "text", false));
-		            ticketAttributes.add(createListItem("plateCode", ticket.path("PlateCode").asText(), "PLATE_CODE", "text", false));
-		            ticketAttributes.add(createListItem("plateNo", ticket.path("PlateNo").asText(), "PLATE_NUMBER", "text", false));
+		            ticketAttributes.add(createListItem("ticketNo", ticket.path("TicketNo").asText(), "TICKET_NUMBER", "text", Boolean.TRUE));
+		            ticketAttributes.add(createListItem("flagPayable", ticket.path("isPayable").asText(), "PAYABLE_FLAG", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("ticketId", ticket.path("TicketId").asText(), "", "text", Boolean.TRUE));
+		            ticketAttributes.add(createListItem("fineSource", ticketNode.path("FineSource").asText(), "FINE_SOURCE", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("ticketDate", ticket.path("ticketDateField").asText(), "TICKET_DATE", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("ticketTime", ticket.path("ticketTimeField").asText(), "TICKET_TIME", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("ticketDescription", ticket.path("TicketDescription").asText(), "TICKET_DESCRIPTION", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("ticketAmount", ticket.path("CalculatedFineAmount").asText(), "PRODUCT_DESCRIPTION", "currency", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("locationDescription", ticket.path("locationDescription").asText(), "LOCATION_DESCRIPTION", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("penaltyFine", ticket.path("PenaltyFine").asText(), "PENALTY_FINE", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("knowledgeFee", ticket.path("KnowledgeFee").asText(), "KNOWLEDGE_FEE", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("licenceNo", ticket.path("LicenseNo").asText(), "LICENCE_NUMBER", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("plateFrom", ticket.path("PlateFrom").asText(), "PLATE_FROM", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("plateCode", ticket.path("PlateCode").asText(), "PLATE_CODE", "text", Boolean.FALSE));
+		            ticketAttributes.add(createListItem("plateNo", ticket.path("PlateNo").asText(), "PLATE_NUMBER", "text", Boolean.FALSE));
 
 		            ListItem ticketItem = new ListItem();
 		            ticketItem.setRowNumber(j + 1);
@@ -371,56 +425,7 @@ public class MbmeBillPaymentService_new {
 		        }
 		    }
 
-		    dynamicFields.add(createDynamicField("ticketsList", "", "", "table", true, false, ticketsList));
-		   // response.setDynamicResponseFields(dynamicFields);
-			
-			
-			
-			
-//			var productsList = new ArrayList<ListItem>();
-//			var arrayResponse = rootNode.path("responseData").path("arrayResponse");
-//		    for (var i = 0; i < arrayResponse.size(); i++) {
-//		        var productNode = arrayResponse.get(i);
-//		        var productAttributes = new ArrayList<ListItem>();
-//
-//		        
-//		        productAttributes.add(createListItem("id", productNode.path("id2").asText(), "TRAFFIC_FILE_NUMBER", "text", true));
-//		        productAttributes.add(createListItem("serviceId", productNode.path("serviceId").asText(), "", "text", true));
-//		        productAttributes.add(createListItem("description", productNode.path("desc").asText(), "PRODUCT_DESCRIPTION", "text", false));
-//		        productAttributes.add(createListItem("amount", productNode.path("Sum").asText(), "", "currency", true));
-//		        productAttributes.add(createListItem("image", productNode.path("image").asText(), "", "image", false));
-//		        productAttributes.add(createListItem("voucherBrand", productNode.path("brand").asText(), "", "text", true));
-//
-//		        var product = new ListItem();
-//		        product.setRowNumber(i + 1);
-//		        product.setList(productAttributes);
-//		        productsList.add(product);
-//		    }
-//
-//		    dynamicFields.add(createDynamicField("ticketsList", "", "", "table", true, false, productsList));
-//		    
-//		   if(balanceEnquiryRequest.getServiceCode() != null && balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("byTrfNo")) {
-//			   dynamicFields.add(createDynamicField("blackPoints", rootNode.path("responseData").path("resField1").asText(),
-//						"", "text", true, false, null));
-//			    
-//			    dynamicFields.add(createDynamicField("trafficFileNo", rootNode.path("responseData").path("resField2").asText(),
-//						"TRAFFIC_FILE_NUMBER", "text", true, false, null));
-//			    dynamicFields.add(createDynamicField("pedestrianFine", rootNode.path("responseData").path("resField3").asText(),
-//						"", "text", false, false, null));
-//		    } else  if(balanceEnquiryRequest.getServiceCode() != null && balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("byPlateNo")) {
-//		    	dynamicFields.add(createDynamicField("trafficFileNo", rootNode.path("responseData").path("resField2").asText(),
-//						"TRAFFIC_FILE_NUMBER", "text", true, false, null));
-//			   
-//		   }else  if(balanceEnquiryRequest.getServiceCode() != null && balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("byTicketNo")) {
-//		    	dynamicFields.add(createDynamicField("trafficFileNo", rootNode.path("responseData").path("resField2").asText(),
-//						"TRAFFIC_FILE_NUMBER", "text", true, false, null));
-//			   
-//		   }else  if(balanceEnquiryRequest.getServiceCode() != null && balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("byLicenceNo")) {
-//		    	dynamicFields.add(createDynamicField("trafficFileNo", rootNode.path("responseData").path("resField2").asText(),
-//						"TRAFFIC_FILE_NUMBER", "text", true, false, null));
-//			   
-//		   }
-		    
+		    dynamicFields.add(createDynamicField("ticketsList", "", "", "table", Boolean.TRUE, Boolean.FALSE, ticketsList));
 		   
 		    
 
@@ -450,7 +455,7 @@ public class MbmeBillPaymentService_new {
 		field.setLabel(label);
 		field.setType(type);
 		field.setVisible(visible);
-		field.setExport(isExportAllowed); // Assuming export is always true for these fields
+		field.setExport(isExportAllowed); // Assuming export is always Boolean.TRUE for these fields
 		field.setList(list); // Initialize list if needed
 		return field;
 	}
@@ -458,33 +463,65 @@ public class MbmeBillPaymentService_new {
 	private void setAdditionalResponseDetails(BalanceEnquiryResponse response,
 			BalanceEnquiryRequest balanceEnquiryRequest) {
 		switch (balanceEnquiryRequest.getServiceId()) {
-		case "103", "1" -> {
+		case "103" -> {
 			response.setMinAmount("50.00");
 			response.setMaxAmount("10000.00");
-			response.setCustomerCommission(true);
+			response.setCustomerCommission(Boolean.TRUE);
 			response.setCommissionPercentage("0");
-			response.setPartialPayment(true);
+			response.setPartialPayment(Boolean.TRUE);
+			response.setChangeHandling("credit");
+		}case  "1" -> {
+			response.setMinAmount("5.00");
+			response.setMaxAmount("1000.00");
+			response.setCustomerCommission(Boolean.TRUE);
+			response.setCommissionPercentage("0");
+			response.setPartialPayment(Boolean.TRUE);
 			response.setChangeHandling("credit");
 		}
 		case "18" -> {
 			response.setMinAmount("");
 			response.setMaxAmount("");
-			response.setCustomerCommission(false);
-			response.setPartialPayment(false);
+			response.setCustomerCommission(Boolean.FALSE);
+			response.setPartialPayment(Boolean.FALSE);
 			response.setChangeHandling("credit");
 		}
 		case "19" -> {
-			response.setMinAmount("20.00");
-			response.setMaxAmount("10000.00");
-			response.setCustomerCommission(true);
-			response.setPartialPayment(true);
+			if (Objects.nonNull(balanceEnquiryRequest.getServiceCode())
+					&& !balanceEnquiryRequest.getServiceCode().isEmpty()
+					&& balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("EtisalatTopUp")) {
+				
+				response.setMinAmount("10.00");
+				response.setMaxAmount("10000.00");
+				response.setCustomerCommission(Boolean.TRUE);
+				response.setPartialPayment(Boolean.TRUE);
+				response.setBanknoteCut("10.00");;
+				response.setChangeHandling("credit");
+			}else if (Objects.nonNull(balanceEnquiryRequest.getServiceCode())
+					&& !balanceEnquiryRequest.getServiceCode().isEmpty()
+					&& balanceEnquiryRequest.getServiceCode().equalsIgnoreCase("EtisalatBillPayment")) {
+				response.setMinAmount("10.00");
+				response.setMaxAmount("10000.00");
+				response.setCustomerCommission(Boolean.TRUE);
+				response.setPartialPayment(Boolean.TRUE);
+				response.setChangeHandling("credit");
+			} else {
+				logger.warn("Unhandled Etisalat service code: {}", balanceEnquiryRequest.getServiceCode());
+			}
+			
+		}
+		case "21" -> {
+			response.setMinAmount("50.00");
+			response.setMaxAmount("1000.00");
+			response.setCustomerCommission(Boolean.TRUE);
+			response.setPartialPayment(Boolean.TRUE);
+			response.setBanknoteCut("50.00");;
 			response.setChangeHandling("credit");
 		}
 		case "42" -> {
 			response.setMinAmount("10.00");
 			response.setMaxAmount("500.00");
-			response.setCustomerCommission(true);
-			response.setPartialPayment(true);
+			response.setCustomerCommission(Boolean.TRUE);
+			response.setPartialPayment(Boolean.TRUE);
 			response.setChangeHandling("credit");
 		}
 		default -> logger.warn("Unhandled serviceId for additional response details: {}",

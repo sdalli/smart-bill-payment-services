@@ -2,27 +2,27 @@
     <property name="LOG_PATH" value="${LOG_PATH:-${logging.file.path}}"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/projectname.log</file>
+        <file>${LOG_PATH}/smart-bill-payment-services.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>${LOG_PATH}/projectname.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOG_PATH}/smart-bill-payment-services.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- keep 30 days' worth of history -->
             <maxHistory>30</maxHistory>
+            <!-- Maximum file size before rollover -->
+            <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %mask{%msg}%n</pattern>
         </encoder>
     </appender>
-    
     
     <conversionRule conversionWord="mask" converterClass="com.sesami.smart_bill_payment_services.config.MaskingSensitiveDataConverter"/>
     
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %mask{%msg}%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %mask{%msg}%n</pattern>
         </encoder>
     </appender>
-
 
     <root level="INFO">
         <appender-ref ref="FILE"/>

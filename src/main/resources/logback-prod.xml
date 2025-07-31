@@ -2,19 +2,26 @@
     <property name="LOG_PATH" value="${LOG_PATH:-${logging.file.path}}"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/projectname.log</file>
+        <file>${LOG_PATH}/smart-bill-payment-services.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>${LOG_PATH}/projectname.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <!-- keep 30 days' worth of history -->
-            <maxHistory>30</maxHistory>
+            <fileNamePattern>${LOG_PATH}/smart-bill-payment-services.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- keep 90 days' worth of history for production -->
+            <maxHistory>90</maxHistory>
+            <!-- Maximum file size before rollover -->
+            <totalSizeCap>50GB</totalSizeCap>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="WARN">
         <appender-ref ref="FILE"/>
     </root>
+    
+    <!-- Application specific logging -->
+    <logger name="com.sesami" level="INFO" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
 </configuration>

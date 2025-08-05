@@ -46,9 +46,15 @@ public class MbmeBillServiceController {
             return ResponseEntity.ok(balanceEnquiryResponse);
         } catch (SmartServiceCommonException e) {
             // Log the custom exception here
-            return ResponseEntity.status(e.getHttpStatus()).body(null); // Return the custom error response
+        	  BalanceEnquiryResponse errorResponse = new BalanceEnquiryResponse();
+        	  errorResponse.setResponseCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+              errorResponse.setResponseMessage(e.getMessage());
+            return ResponseEntity.status(e.getHttpStatus()).body(errorResponse); // Return the custom error response
         } catch (Exception e) {
             // Log other exceptions here
+        	  BalanceEnquiryResponse errorResponse = new BalanceEnquiryResponse();
+              errorResponse.setResponseCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+              errorResponse.setResponseMessage("An unexpected error occurred.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Generic error response
         }
     }

@@ -112,9 +112,15 @@ public class MbmeBillPaymentService_V2 {
 		response.setResponseStatus(rootNode.path("status").asText());
 		response.setResponseMessage(rootNode.path("responseMessage").asText());
 		
-		response.setCustomerMessage("");
-		response.setInternalWebServiceCode("000");
-		response.setInternalWebServiceDesc("SUCCESS");
+		if(response.getResponseCode().equalsIgnoreCase("000")) {
+			response.setInternalWebServiceCode("000");
+			response.setInternalWebServiceDesc("SUCCESS");
+			response.setCustomerMessage("SUCCESS");
+		}else {
+			response.setInternalWebServiceCode("400");
+			response.setInternalWebServiceDesc("Error");
+			response.setInternalWebServiceDesc("Transaction is under processing");
+		}
 
 		response.setDynamicResponseFields(generateDynamicResponseFields(balanceEnquiryRequest, rootNode));
 
@@ -207,25 +213,35 @@ public class MbmeBillPaymentService_V2 {
 					rootNode.path("responseData").path("resField2").asText(), "", TEXT_FIELD_TYPE, Boolean.FALSE, Boolean.TRUE, null));
 		}
 		case "20150" -> { // Dubai DED Payment
-			dynamicFields.add(createDynamicField("commissionValue", "20.00", "CUSTOMER_COMMISSION", "currency", Boolean.TRUE,
-					Boolean.FALSE, null));
+			 // Dubai DED Payment
+			dynamicFields.add(createDynamicField("externalTransactionId", billPaymentRequest.getExternalTransactionId(), "", "text", Boolean.FALSE,
+					Boolean.TRUE, null));
 			dynamicFields
-					.add(createDynamicField("voucherNumber", rootNode.path("responseData").path("resField1").asText(),
-							"VOUCHER_NUMBER", TEXT_FIELD_TYPE, Boolean.TRUE, Boolean.FALSE, null));
-			dynamicFields.add(createDynamicField("dueAmount", rootNode.path("responseData").path("amount").asText(),
-					"DUE_AMOUNT", "currency", Boolean.TRUE, Boolean.FALSE, null));
-			dynamicFields
-					.add(createDynamicField("voucherDate", rootNode.path("responseData").path("resField2").asText(),
-							"VOUCHER_DATE", TEXT_FIELD_TYPE, Boolean.TRUE, Boolean.FALSE, null));
+					.add(createDynamicField("transactionId", rootNode.path("responseData").path("transactionId").asText(),
+							"", "text", Boolean.FALSE, Boolean.TRUE, null));
+			dynamicFields.add(createDynamicField("amountPaid", rootNode.path("responseData").path("amountPaid").asText(),
+					"", "currency", Boolean.FALSE, Boolean.TRUE, null));
+			
+			dynamicFields.add(createDynamicField("apiReturnTransactionId",
+					rootNode.path("responseData").path("providerTransactionId").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+			
+			
 			dynamicFields.add(
-					createDynamicField("voucherExpireDate", rootNode.path("responseData").path("resField3").asText(),
-							"VOUCHER_EXPIRE_DATE", TEXT_FIELD_TYPE, Boolean.TRUE, Boolean.FALSE, null));
-			dynamicFields.add(createDynamicField("cashFlag", rootNode.path("responseData").path("resField4").asText(),
-					"", TEXT_FIELD_TYPE, Boolean.FALSE, Boolean.FALSE, null));
-			dynamicFields.add(createDynamicField("datedChequeFlag",
-					rootNode.path("responseData").path("resField5").asText(), "", TEXT_FIELD_TYPE, Boolean.FALSE, Boolean.FALSE, null));
-			dynamicFields.add(createDynamicField("creditCardFlag",
-					rootNode.path("responseData").path("resField6").asText(), "", TEXT_FIELD_TYPE, Boolean.FALSE, Boolean.FALSE, null));
+					createDynamicField("docketNumber", rootNode.path("responseData").path("resField1").asText(),
+							"DOCKET_NUMBER", "text", Boolean.TRUE, Boolean.FALSE, null));
+			dynamicFields.add(createDynamicField("receiptDate", rootNode.path("responseData").path("resField2").asText(),
+					"", "text", Boolean.FALSE, Boolean.FALSE, null));
+			
+			
+			dynamicFields.add(createDynamicField("voucherNumber",
+					rootNode.path("responseData").path("resField3").asText(), "VOUCHER_NUMBER", "text", Boolean.TRUE, Boolean.FALSE, null));
+			
+			dynamicFields.add(createDynamicField("hyperlink",
+					rootNode.path("responseData").path("resField4").asText(), "", "text", Boolean.FALSE, Boolean.FALSE, null));
+			
+
+		
+			
 
 		}
 		case "20147" -> { // Hello / Five recharge

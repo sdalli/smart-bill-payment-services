@@ -112,8 +112,16 @@ public class MbmeBillInquiryService_V2 {
 		response.setResponseCode(rootNode.path("responseCode").asText());
 		response.setResponseStatus(rootNode.path("status").asText());
 		response.setResponseMessage(rootNode.path("responseMessage").asText());
-		response.setInternalWebServiceCode("000");
-		response.setInternalWebServiceDesc("SUCCESS");
+		if(response.getResponseCode().equalsIgnoreCase("000")) {
+			response.setInternalWebServiceCode("000");
+			response.setInternalWebServiceDesc("SUCCESS");
+			response.setCustomerMessage("SUCCESS");
+		}else {
+			response.setInternalWebServiceCode("400");
+			response.setInternalWebServiceDesc("Error");
+			response.setInternalWebServiceDesc("Error");
+		}
+		
 
 		response.setDynamicResponseFields(generateDynamicResponseFields(balanceEnquiryRequest, rootNode));
 		response.setDueAmount(rootNode.path("responseData").path("amount").asText());
@@ -300,33 +308,110 @@ public class MbmeBillInquiryService_V2 {
 		    dynamicFields.add(createDynamicField("productsList", "", "SELECT_VOUCHER", "buttons", Boolean.TRUE, Boolean.FALSE, productsList));
 
 		}
+//		case "112" -> { // International TopUp
+//
+//		    // Check for error response
+//		    String responseCode = rootNode.path("responseCode").asText();
+//		    if ("302".equals(responseCode)) {
+//		        String billerErrorCode = rootNode.path("billerErrorCode").asText();
+//		        String billerMessage = rootNode.path("billerMessage").asText();
+//		        String responseMessage = rootNode.path("responseMessage").asText();
+//
+//		        throw new SmartServiceCommonException(
+//		            String.format("Error Code: %s, Biller Error Code: %s, Message: %s", responseCode, billerErrorCode, responseMessage),
+//		            HttpStatus.TOO_MANY_REQUESTS
+//		        );
+//		    } else if ("301".equals(responseCode)) {
+//		        String responseMessage = rootNode.path("responseMessage").asText();
+//
+//		        throw new SmartServiceCommonException(
+//		            String.format("Duplicate Transaction Error: %s", responseMessage),
+//		            HttpStatus.CONFLICT
+//		        );
+//		    }
+//
+//		    // Parse providerName
+//		    dynamicFields.add(createDynamicField(
+//		        "providerName",
+//		       "",
+//		        // rootNode.path("responseData").path("dynamicResponseFields").findValue("resField2").path("value").asText(), 
+//		        "SERVICE_PROVIDER",
+//		        "text",
+//		        Boolean.TRUE,
+//		        Boolean.FALSE,
+//		        null
+//		    ));
+//
+//		    // Parse phoneNumber
+//		    dynamicFields.add(createDynamicField(
+//		        "phoneNumber",
+//		       // rootNode.path("responseData").path("dynamicResponseFields").findValue("phoneNumber").path("value").asText(),
+//		        "",
+//		        "PHONE_NUMBER",
+//		        "text",
+//		        Boolean.TRUE,
+//		        Boolean.FALSE,
+//		        null
+//		    ));
+//
+//		    // Parse amounts (list of products)
+//		    var productsList = new ArrayList<ListItem>();
+//		    var amountsField = rootNode.path("responseData").path("dynamicResponseFields").findValue("amounts");
+//		    var listArray = amountsField.path("list");
+//
+//		    for (var i = 0; i < listArray.size(); i++) {
+//		        var productNode = listArray.get(i);
+//		        var productAttributes = new ArrayList<ListItem>();
+//
+//		        productAttributes.add(createListItem("id", productNode.findValue("id").path("value").asText(), "SKU_CODE", "text", Boolean.TRUE));
+//		        productAttributes.add(createListItem("description", productNode.findValue("description").path("value").asText(), "PRODUCT_DESCRIPTION", "text", Boolean.FALSE));
+//		        productAttributes.add(createListItem("value", productNode.findValue("value").path("value").asText(), "PRODUCT_VALUE", "currency", Boolean.TRUE));
+//		        productAttributes.add(createListItem("foreignValue", productNode.findValue("foreignValue").path("value").asText(), "PRODUCT_FOREIGN_VALUE", "number", Boolean.TRUE));
+//		        productAttributes.add(createListItem("foreignCurrencyIso", productNode.findValue("foreignCurrencyIso").path("value").asText(), "FOREIGN_CURRENCY_ISO", "text", Boolean.FALSE));
+//
+//		        var product = new ListItem();
+//		        product.setRowNumber(i + 1);
+//		        product.setList(productAttributes);
+//		        productsList.add(product);
+//		    }
+//
+//		    dynamicFields.add(createDynamicField(
+//		        "amounts",
+//		        "",
+//		        "SELECT_TOPUP_ITEM",
+//		        "buttons",
+//		        Boolean.TRUE,
+//		        Boolean.FALSE,
+//		        productsList
+//		    ));
+//		}
+		
+		
 		case "112" -> { // International TopUp
 
-		    // Check for error response
 		    String responseCode = rootNode.path("responseCode").asText();
 		    if ("302".equals(responseCode)) {
 		        String billerErrorCode = rootNode.path("billerErrorCode").asText();
 		        String billerMessage = rootNode.path("billerMessage").asText();
 		        String responseMessage = rootNode.path("responseMessage").asText();
-
 		        throw new SmartServiceCommonException(
 		            String.format("Error Code: %s, Biller Error Code: %s, Message: %s", responseCode, billerErrorCode, responseMessage),
 		            HttpStatus.TOO_MANY_REQUESTS
 		        );
 		    } else if ("301".equals(responseCode)) {
 		        String responseMessage = rootNode.path("responseMessage").asText();
-
 		        throw new SmartServiceCommonException(
 		            String.format("Duplicate Transaction Error: %s", responseMessage),
 		            HttpStatus.CONFLICT
 		        );
 		    }
 
-		    // Parse providerName
+		    String providerName = rootNode.path("responseData").path("resField2").isMissingNode() || rootNode.path("responseData").path("resField2").isNull() ? "" : rootNode.path("responseData").path("resField2").asText();
+		    String phoneNumber = "919633551036"; //balanceEnquiryRequest.getAccountNumber() == null ? "" : balanceEnquiryRequest.getAccountNumber();
+
 		    dynamicFields.add(createDynamicField(
 		        "providerName",
-		       "",
-		        // rootNode.path("responseData").path("dynamicResponseFields").findValue("resField2").path("value").asText(), 
+		        providerName,
 		        "SERVICE_PROVIDER",
 		        "text",
 		        Boolean.TRUE,
@@ -334,11 +419,9 @@ public class MbmeBillInquiryService_V2 {
 		        null
 		    ));
 
-		    // Parse phoneNumber
 		    dynamicFields.add(createDynamicField(
 		        "phoneNumber",
-		       // rootNode.path("responseData").path("dynamicResponseFields").findValue("phoneNumber").path("value").asText(),
-		        "",
+		        phoneNumber,
 		        "PHONE_NUMBER",
 		        "text",
 		        Boolean.TRUE,
@@ -346,22 +429,29 @@ public class MbmeBillInquiryService_V2 {
 		        null
 		    ));
 
-		    // Parse amounts (list of products)
-		    var productsList = new ArrayList<ListItem>();
-		    var amountsField = rootNode.path("responseData").path("dynamicResponseFields").findValue("amounts");
-		    var listArray = amountsField.path("list");
+		    ArrayList<ListItem> productsList = new ArrayList<>();
+		    JsonNode resField3Array = rootNode.path("responseData").path("resField3");
+		    for (int i = 0; i < resField3Array.size(); i++) {
+		        JsonNode productNode = resField3Array.get(i);
+		        ArrayList<ListItem> productAttributes = new ArrayList<>();
 
-		    for (var i = 0; i < listArray.size(); i++) {
-		        var productNode = listArray.get(i);
-		        var productAttributes = new ArrayList<ListItem>();
+		        productAttributes.add(createListItem("id",
+		            productNode.path("SkuCode").isMissingNode() || productNode.path("SkuCode").isNull() ? "" : productNode.path("SkuCode").asText(),
+		            "SKU_CODE", "text", true));
+		        productAttributes.add(createListItem("description",
+		            productNode.path("DefaultDisplayText").isMissingNode() || productNode.path("DefaultDisplayText").isNull() ? "" : productNode.path("DefaultDisplayText").asText(),
+		            "PRODUCT_DESCRIPTION", "text", false));
+		        productAttributes.add(createListItem("value",
+		            productNode.path("Minimum").path("SendValue").isMissingNode() || productNode.path("Minimum").path("SendValue").isNull() ? "" : productNode.path("Minimum").path("SendValue").asText(),
+		            "PRODUCT_VALUE", "currency", true));
+		        productAttributes.add(createListItem("foreignValue",
+		            productNode.path("Minimum").path("ReceiveValue").isMissingNode() || productNode.path("Minimum").path("ReceiveValue").isNull() ? "" : productNode.path("Minimum").path("ReceiveValue").asText(),
+		            "PRODUCT_FOREIGN_VALUE", "number", true));
+		        productAttributes.add(createListItem("foreignCurrencyIso",
+		            productNode.path("Minimum").path("ReceiveCurrencyIso").isMissingNode() || productNode.path("Minimum").path("ReceiveCurrencyIso").isNull() ? "" : productNode.path("Minimum").path("ReceiveCurrencyIso").asText(),
+		            "FOREIGN_CURRENCY_ISO", "text", false));
 
-		        productAttributes.add(createListItem("id", productNode.findValue("id").path("value").asText(), "SKU_CODE", "text", Boolean.TRUE));
-		        productAttributes.add(createListItem("description", productNode.findValue("description").path("value").asText(), "PRODUCT_DESCRIPTION", "text", Boolean.FALSE));
-		        productAttributes.add(createListItem("value", productNode.findValue("value").path("value").asText(), "PRODUCT_VALUE", "currency", Boolean.TRUE));
-		        productAttributes.add(createListItem("foreignValue", productNode.findValue("foreignValue").path("value").asText(), "PRODUCT_FOREIGN_VALUE", "number", Boolean.TRUE));
-		        productAttributes.add(createListItem("foreignCurrencyIso", productNode.findValue("foreignCurrencyIso").path("value").asText(), "FOREIGN_CURRENCY_ISO", "text", Boolean.FALSE));
-
-		        var product = new ListItem();
+		        ListItem product = new ListItem();
 		        product.setRowNumber(i + 1);
 		        product.setList(productAttributes);
 		        productsList.add(product);
@@ -377,6 +467,8 @@ public class MbmeBillInquiryService_V2 {
 		        productsList
 		    ));
 		}
+		
+		
 		case "18" -> { // Dubai Police Traffic Fines 
 
 			
@@ -523,6 +615,12 @@ public class MbmeBillInquiryService_V2 {
 			response.setCustomerCommission(Boolean.TRUE);
 			response.setPartialPayment(Boolean.TRUE);
 			response.setChangeHandling("credit");
+		}
+		case "20150" -> {
+			response.setMinAmount("");
+			response.setMaxAmount("");
+			response.setPartialPayment(Boolean.FALSE);
+			response.setCommissionValue("20.00");
 		}
 		default -> logger.warn("Unhandled serviceId for additional response details: {}",
 				balanceEnquiryRequest.getServiceId());

@@ -90,7 +90,7 @@ public final class DynamicBillPaymentServiceRequestUtil {
         case "14", "15" -> {
             putIfPresent(rootNode, "reqField1", fieldMap, "serviceName");
         }
-        case "18" -> handleServiceId18(rootNode, fieldMap, billPaymentRequest);
+        case "18" -> handleServiceId18_inquiry(rootNode, fieldMap, billPaymentRequest);
         case "19" -> {
            
         	//handleServiceId_Etislate_19(rootNode, fieldMap, billPaymentRequest);
@@ -109,7 +109,17 @@ public final class DynamicBillPaymentServiceRequestUtil {
             putIfPresent(rootNode, "reqField2", fieldMap, "type");
         }
         case "20150" -> {
-            putIfPresent(rootNode, "reqField1", fieldMap, "transactionNumber");
+            putIfPresent(rootNode, "reqField1", fieldMap, "voucherNumber");
+            putIfPresent(rootNode, "reqField2", fieldMap, "customerDocumentName");
+            putIfPresent(rootNode, "reqField3", fieldMap, "emiratesCardId");
+            putIfPresent(rootNode, "reqField4", fieldMap, "customerEmail");
+            putIfPresent(rootNode, "reqField5", fieldMap, "mobileNumber");
+            putIfPresent(rootNode, "reqField6", fieldMap, "customerName");
+            putIfPresent(rootNode, "reqField7", fieldMap, ""); // Ensure this key exists in the map or will be null
+            putIfPresent(rootNode, "reqField8", fieldMap, ""); // Ensure this key exists in the map or will be null
+            putIfPresent(rootNode, "reqField9", fieldMap, ""); // Ensure this key exists in the map or will be null reqField10
+            putIfPresent(rootNode, "reqField10", fieldMap, "amount");
+            
         }
         case "112" -> {
             putIfPresent(rootNode, "reqField1", fieldMap, "phoneNumber");
@@ -125,35 +135,54 @@ public final class DynamicBillPaymentServiceRequestUtil {
     return rootNode.toString();
     }
 
-    private static void handleServiceId18(ObjectNode rootNode, Map<String, String> fieldMap, BillPaymentRequest billPaymentRequest) {
+    private static void handleServiceId18_createTransaction(ObjectNode rootNode, Map<String, String> fieldMap, BillPaymentRequest billPaymentRequest) {
+        // Add reqField1 as an array of objects
+        var finesArray = rootNode.putArray("reqField1");
+
+        // Example data for fines (replace with actual dynamic data from fieldMap or request)
+        var fine1 = finesArray.addObject();
+        fine1.put("FineSource", "Dubai Police");
+        fine1.put("TicketId", "144825581");
+
+        var fine2 = finesArray.addObject();
+        fine2.put("FineSource", "Dubai Police");
+        fine2.put("TicketId", "144706652");
+
+        // Add other fields
+        putIfPresent(rootNode, "reqField2", fieldMap, "trafficFileNo");
+        putIfPresent(rootNode, "reqField3", fieldMap, "isPaid");
+    }
+
+    private static void handleServiceId18_inquiry(ObjectNode rootNode, Map<String, String> fieldMap, BillPaymentRequest billPaymentRequest) {
     	var searchType = fieldMap.get("searchType"); // Fetch the value of searchType directly from the fieldMap
     	billPaymentRequest.setServiceCode(searchType); // Set the service code based on searchType
     	// Dubai Traffic Fines
     	if( billPaymentRequest.getServiceType() == null  && billPaymentRequest.getServiceType().equalsIgnoreCase("createTransaction")) {
+    		handleServiceId18_createTransaction(rootNode, fieldMap, billPaymentRequest);
     		
+    	}else {
+    		 if ("byTrfNo".equalsIgnoreCase(searchType)) {
+    	            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
+    	            putIfPresent(rootNode, "reqField2", fieldMap, "trafficFileNo");
+    	        } else if ("byPlateNo".equalsIgnoreCase(searchType)) {
+    	            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
+    	            putIfPresent(rootNode, "reqField2", fieldMap, "plateNo");
+    	            putIfPresent(rootNode, "reqField3", fieldMap, "plateCode");
+    	            putIfPresent(rootNode, "reqField4", fieldMap, "plateCategory");
+    	            putIfPresent(rootNode, "reqField5", fieldMap, "plateSource");
+    	        } else if ("byTicketNo".equalsIgnoreCase(searchType)) {
+    	            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
+    	            putIfPresent(rootNode, "reqField2", fieldMap, "ticketNo");
+    	            putIfPresent(rootNode, "reqField3", fieldMap, "ticketYear");
+    	            putIfPresent(rootNode, "reqField4", fieldMap, "beneficiaryCode");
+    	            putIfPresent(rootNode, "reqField5", fieldMap, "beneficiaryName");
+    	        } else if ("byLicenceNo".equalsIgnoreCase(searchType)) {
+    	            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
+    	            putIfPresent(rootNode, "reqField2", fieldMap, "licenceSourceCode");
+    	            putIfPresent(rootNode, "reqField3", fieldMap, "licenceNumber");
+    	            putIfPresent(rootNode, "reqField4", fieldMap, "licenceFrom");
+    	     }
     	}
-    	
-        if ("byTrfNo".equalsIgnoreCase(searchType)) {
-            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
-            putIfPresent(rootNode, "reqField2", fieldMap, "trafficFileNo");
-        } else if ("byPlateNo".equalsIgnoreCase(searchType)) {
-            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
-            putIfPresent(rootNode, "reqField2", fieldMap, "plateNo");
-            putIfPresent(rootNode, "reqField3", fieldMap, "plateCode");
-            putIfPresent(rootNode, "reqField4", fieldMap, "plateCategory");
-            putIfPresent(rootNode, "reqField5", fieldMap, "plateSource");
-        } else if ("byTicketNo".equalsIgnoreCase(searchType)) {
-            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
-            putIfPresent(rootNode, "reqField2", fieldMap, "ticketNo");
-            putIfPresent(rootNode, "reqField3", fieldMap, "ticketYear");
-            putIfPresent(rootNode, "reqField4", fieldMap, "beneficiaryCode");
-            putIfPresent(rootNode, "reqField5", fieldMap, "beneficiaryName");
-        } else if ("byLicenceNo".equalsIgnoreCase(searchType)) {
-            putIfPresent(rootNode, "reqField1", fieldMap, "searchType");
-            putIfPresent(rootNode, "reqField2", fieldMap, "licenceSourceCode");
-            putIfPresent(rootNode, "reqField3", fieldMap, "licenceNumber");
-            putIfPresent(rootNode, "reqField4", fieldMap, "licenceFrom");
-        }
     }
 
     private static void handleServiceId_Etislate_19(ObjectNode rootNode, Map<String, String> fieldMap, BillPaymentRequest billPaymentRequest) {
@@ -171,12 +200,17 @@ public final class DynamicBillPaymentServiceRequestUtil {
             putIfPresent(rootNode, "reqField5", fieldMap, "plateSource");
         } 
     }
+//    private static void putIfPresent(ObjectNode node, String jsonField, Map<String, String> source, String sourceKey) {
+//        var value = source.get(sourceKey);
+//        if (value != null) {
+//            node.put(jsonField, value);
+//        }else  {
+//            logger.warn("Expected dynamic field '{}' not found in request fields.", sourceKey);
+//        }
+//    }
+    
     private static void putIfPresent(ObjectNode node, String jsonField, Map<String, String> source, String sourceKey) {
         var value = source.get(sourceKey);
-        if (value != null) {
-            node.put(jsonField, value);
-        } else {
-            logger.warn("Expected dynamic field '{}' not found in request fields.", sourceKey);
-        }
+        node.put(jsonField, value); // Automatically handles null values
     }
 }

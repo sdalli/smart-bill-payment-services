@@ -115,7 +115,7 @@ public class MbmeBillPaymentService_V2 {
 		if(response.getResponseCode().equalsIgnoreCase("000")) {
 			response.setInternalWebServiceCode("000");
 			response.setInternalWebServiceDesc("SUCCESS");
-			response.setCustomerMessage("SUCCESS");
+			response.setCustomerMessage("");
 		}else {
 			response.setInternalWebServiceCode("400");
 			response.setInternalWebServiceDesc("Error");

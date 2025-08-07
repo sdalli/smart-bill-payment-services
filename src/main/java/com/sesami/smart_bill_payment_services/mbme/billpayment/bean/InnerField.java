@@ -1,12 +1,9 @@
 package com.sesami.smart_bill_payment_services.mbme.billpayment.bean;
 
-public class SubDynamicRequestFields {
+public class InnerField {
 
-	private String name;
+    private String name;
     private String value;
-    private String rowNumber;
-    
-	
 	public String getName() {
 		return name;
 	}
@@ -19,12 +16,7 @@ public class SubDynamicRequestFields {
 	public void setValue(String value) {
 		this.value = value;
 	}
-	public String getRowNumber() {
-		return rowNumber;
-	}
-	public void setRowNumber(String rowNumber) {
-		this.rowNumber = rowNumber;
-	}
+
     
-    
+
 }

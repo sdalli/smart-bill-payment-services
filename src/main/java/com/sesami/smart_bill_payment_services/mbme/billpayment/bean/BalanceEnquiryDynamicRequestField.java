@@ -1,6 +1,7 @@
 package com.sesami.smart_bill_payment_services.mbme.billpayment.bean;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class BalanceEnquiryDynamicRequestField implements Serializable {
 	 /**
@@ -9,6 +10,8 @@ public class BalanceEnquiryDynamicRequestField implements Serializable {
 	private static final long serialVersionUID = -3777515891446767212L;
 	private String name;
     private String value;
+    private List<SubDynamicRequestFields> subDynamicRequestFields;
+    
 	public String getName() {
 		return name;
 	}
@@ -23,7 +26,13 @@ public class BalanceEnquiryDynamicRequestField implements Serializable {
 	}
 	
     
-    
+	public List<SubDynamicRequestFields> getSubDynamicRequestFields() {
+		return subDynamicRequestFields;
+	}
+	public void setSubDynamicRequestFields(List<SubDynamicRequestFields> subDynamicRequestFields) {
+		this.subDynamicRequestFields = subDynamicRequestFields;
+	}
+	
     
     
     

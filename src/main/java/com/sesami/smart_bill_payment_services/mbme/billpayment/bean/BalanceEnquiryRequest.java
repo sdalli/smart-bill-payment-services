@@ -17,8 +17,7 @@ public class BalanceEnquiryRequest implements Serializable {
 	    private String merchantLocation;
 	    private String language;
 	    private String paymentMode;
-	    private List<BalanceEnquiryDynamicRequestField> dynamicRequestFields;
-	    
+	    private List<DynamicRequestField> dynamicRequestFields;
 	    // 
 	    
 		public String getCategory() {
@@ -81,12 +80,7 @@ public class BalanceEnquiryRequest implements Serializable {
 		public void setLanguage(String language) {
 			this.language = language;
 		}
-		public List<BalanceEnquiryDynamicRequestField> getDynamicRequestFields() {
-			return dynamicRequestFields;
-		}
-		public void setDynamicRequestFields(List<BalanceEnquiryDynamicRequestField> dynamicRequestFields) {
-			this.dynamicRequestFields = dynamicRequestFields;
-		}
+		
 		public String getPaymentMode() {
 			return paymentMode;
 		}
@@ -94,7 +88,12 @@ public class BalanceEnquiryRequest implements Serializable {
 			this.paymentMode = paymentMode;
 		}
 		
-	    
+		public List<DynamicRequestField> getDynamicRequestFields() {
+			return dynamicRequestFields;
+		}
+		public void setDynamicRequestFields(List<DynamicRequestField> dynamicRequestFields) {
+			this.dynamicRequestFields = dynamicRequestFields;
+		}
 	    
 	    
 	    

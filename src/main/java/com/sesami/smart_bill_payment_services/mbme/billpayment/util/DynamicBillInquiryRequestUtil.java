@@ -7,6 +7,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sesami.smart_bill_payment_services.mbme.billpayment.bean.BalanceEnquiryDynamicRequestField;
@@ -108,21 +109,49 @@ public final class DynamicBillInquiryRequestUtil {
 
         return rootNode.toString();
     }
-    private static void handleServiceId18_createTransaction(ObjectNode rootNode, Map<String, String> fieldMap, BalanceEnquiryRequest billPaymentRequest) {
+    private static void handleServiceId18_createTransaction(ObjectNode rootNode, Map<String, String> fieldMap, BalanceEnquiryRequest balanceEnquiryRequest) {
         // Add reqField1 as an array of objects
         var finesArray = rootNode.putArray("reqField1");
 
-        // Dynamically populate the array based on dynamicRequestFields
-        billPaymentRequest.getDynamicRequestFields().forEach(dynamicField -> {
-            var fineObject = finesArray.addObject();
-            fineObject.put("FineSource", "Dubai Police"); // Example static value, replace if needed
-            fineObject.put("TicketId", dynamicField.getValue()); // Use the value from the dynamic field
-        });
+        // Find the ticketsList field in dynamicRequestFields
+        for (BalanceEnquiryDynamicRequestField field : balanceEnquiryRequest.getDynamicRequestFields()) {
+            if ("ticketsList".equals(field.getName())) {
+                // Found the tickets list, now process each row
+                if (field.getList() != null && !field.getList().isEmpty()) {
+                    for (BalanceEnquiryDynamicRequestField row : field.getList()) {
+                        // Process each ticket detail in the row
+                        if (row.getList() != null && !row.getList().isEmpty()) {
+                            String ticketId = null;
+                            String fineSource = null;
+                            
+                            // Extract ticketId and fineSource from the row details
+                            for (BalanceEnquiryDynamicRequestField detail : row.getList()) {
+                                if ("ticketId".equals(detail.getName())) {
+                                    ticketId = detail.getValue();
+                                } else if ("fineSource".equals(detail.getName())) {
+                                    fineSource = detail.getValue();
+                                }
+                            }
+                            
+                            // Add to the fines array if ticketId is available
+                            if (ticketId != null) {
+                                var fineObject = finesArray.addObject();
+                                fineObject.put("FineSource", fineSource != null ? fineSource : "Dubai Police");
+                                fineObject.put("TicketId", ticketId);
+                            }
+                        }
+                    }
+                }
+                break; // Found and processed the ticketsList, no need to continue
+            }
+        }
 
         // Add other fields
         putIfPresent(rootNode, "reqField2", fieldMap, "trafficFileNo");
-        putIfPresent(rootNode, "reqField3", fieldMap, "pedestrianFine");
+        putIfPresent(rootNode, "reqField3", fieldMap, "isPaid");
     }
+
+
 
     
     
